@@ -16,12 +16,35 @@ void findMyPutty();
 
 int main()
 {
+  int len;
+
   findMyPutty();
   if (targetWindow == NULL) {
     printf("didn't find the target window");
     return 1;
   }
 
+  len = GetWindowText(targetWindow, buff, LEN_BUFF_LONG);
+  printf("Title len = %d\n[%S]\n", len, buff);
+
+  TCHAR magicMarker = buff[lstrlen(targetTitle)];
+  switch (magicMarker) {
+  case 0:
+    printf("NULL char");
+    break;
+  case 9:
+    printf("tab");
+    break;
+  case 30:
+    printf("Record Seperator");
+    break;
+  case 31:
+    printf("Unit Seperator");
+    break;
+  default:
+    printf("Not enough magic: %d", magicMarker);
+    break;
+  }
 
   return 0;
 }
