@@ -106,7 +106,7 @@ void HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd,
                     LONG idObject, LONG idChild,
                     DWORD dwEventThread, DWORD dwmsEventTime)
 {
-  if (event == EVENT_OBJECT_NAMECHANGE) {
+  if (event == EVENT_OBJECT_NAMECHANGE && idObject == OBJID_WINDOW) {
     showMagic();
   }
 }
