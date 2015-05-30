@@ -15,7 +15,7 @@ windowsnatch.exe: windowsnatch.o
 .PHONY: clean style
 
 style:
-	astyle -n -q -pUH *.c *.h
+	astyle -n -s2 -q -pUH *.c *.h
 
 clean:
 	rm -f *.o *.exe
