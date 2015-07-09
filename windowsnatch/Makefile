@@ -8,6 +8,7 @@ CFLAGS += -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -DUNICODE -D_UNICODE
 
 # remove -mwindows to have an stdout.
 # LINK_FLAGS = -mwindows
+LINK_FLAGS += -s  # Strip debug information
 
 windowsnatch.exe: windowsnatch.o trayicon.o
 	$(CC) $(LINK_FLAGS) -o $@ $^ $(LIBS)
