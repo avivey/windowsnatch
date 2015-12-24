@@ -81,11 +81,13 @@ void showMagic()
   int len = GetWindowText(targetWindow, buff, LEN_BUFF_LONG);
   // printf("Title len = %d\n[%S]\n", len, buff);
 
-  TCHAR magicMarker = len > lstrlen(targetTitle) ? buff[lstrlen(targetTitle)] : 0;
+  TCHAR magicMarker =
+    len > lstrlen(targetTitle) ? buff[lstrlen(targetTitle)] : 0;
   switch (magicMarker) {
   case 0:
-    printf("NULL char");
+    printf("Too short");
     break;
+
   case 9:
     printf("tab");
     break;
@@ -95,6 +97,7 @@ void showMagic()
   case 31:
     printf("Unit Seperator");
     break;
+
   default:
     printf("Not enough magic: %d", magicMarker);
     break;
@@ -117,7 +120,7 @@ BOOL CALLBACK callback(HWND hWnd, LPARAM lParam)
   int len;
 
   if (targetWindow != NULL) {
-    return TRUE;
+    return FALSE;
   }
 
   len = GetClassName(hWnd, buff, lstrlen(targetClass) + 1);
@@ -129,6 +132,7 @@ BOOL CALLBACK callback(HWND hWnd, LPARAM lParam)
   if (len > 0 &&
       lstrcmp(buff, targetTitle) == 0) {
     targetWindow = hWnd;
+    return FALSE;
   }
 
   // printf("window: [%S], [%S]\n", title, className);
