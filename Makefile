@@ -8,7 +8,7 @@ TEENSY = 36
 TEENSY_CORE_SPEED = 48000000
 
 # configurable options
-OPTIONS = -DUSB_SERIAL -DLAYOUT_US_ENGLISH
+OPTIONS = -DUSB_AVIV_WINUSB -DLAYOUT_US_ENGLISH
 
 # directory to build in
 BUILDDIR = $(abspath $(CURDIR)/build)

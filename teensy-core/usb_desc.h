@@ -113,8 +113,24 @@ If these instructions are missing steps or could be improved, please
 let me know?  http://forum.pjrc.com/forums/4-Suggestions-amp-Bug-Reports
 */
 
+#if defined(USB_AVIV_WINUSB)
+  #define VENDOR_ID		0x16C0
+  #define PRODUCT_ID		0x00FF
+  #define DEVICE_CLASS		0x00FF
+  #define MANUFACTURER_NAME	{'A','v','i','v'}
+  #define MANUFACTURER_NAME_LEN	4
+  #define PRODUCT_NAME		{'A','v','i','v',' ','M','a','g','i','c'}
+  #define PRODUCT_NAME_LEN	10
+  #define EP0_SIZE		64
+  #define NUM_ENDPOINTS		1
+  #define NUM_USB_BUFFERS	12
+  #define NUM_INTERFACE		1
+  #define ENDPOINT1_CONFIG	ENDPOINT_TRANSMIT_AND_RECEIVE
 
-#if defined(USB_SERIAL)
+  #define USB_AVIV_WINUSB_INTERFACE 0
+  #define USB_AVIV_WINUSB_ENDPOINT 1
+
+#elif defined(USB_SERIAL)
   #define VENDOR_ID		0x16C0
   #define PRODUCT_ID		0x0483
   #define DEVICE_CLASS		2	// 2 = Communication Class

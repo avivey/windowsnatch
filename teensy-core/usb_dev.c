@@ -43,6 +43,7 @@
 #include "kinetis.h"
 //#include "HardwareSerial.h"
 #include "usb_mem.h"
+#include "usb_names.h"
 #include <string.h> // for memset
 
 // buffer descriptor table
@@ -307,43 +308,41 @@ static void usb_setup(void)
 		break;
 	  case 0x0680: // GET_DESCRIPTOR
 	  case 0x0681:
-		//serial_print("desc:");
-		//serial_phex16(setup.wValue);
-		//serial_print("\n");
-		for (list = usb_descriptor_list; 1; list++) {
-			if (list->addr == NULL) break;
-			//if (setup.wValue == list->wValue &&
-			//(setup.wIndex == list->wIndex) || ((setup.wValue >> 8) == 3)) {
-			if (setup.wValue == list->wValue && setup.wIndex == list->wIndex) {
-				data = list->addr;
-				if ((setup.wValue >> 8) == 3) {
-					// for string descriptors, use the descriptor's
-					// length field, allowing runtime configured
-					// length.
-					datalen = *(list->addr);
-				} else {
-					datalen = list->length;
-				}
+      //serial_print("desc:");
+      //serial_phex16(setup.wValue);
+      //serial_print("\n");
+      for (list = usb_descriptor_list; 1; list++) {
+        if (list->addr == NULL) break;
+        if (setup.wValue == list->wValue && setup.wIndex == list->wIndex) {
+          data = list->addr;
+          if ((setup.wValue >> 8) == 3) {
+            // for string descriptors, use the descriptor's
+            // length field, allowing runtime configured
+            // length.
+            datalen = ((struct usb_string_descriptor_struct *)(list->addr))->bLength;
+          } else {
+            datalen = list->length;
+          }
 #if 0
-				serial_print("Desc found, ");
-				serial_phex32((uint32_t)data);
-				serial_print(",");
-				serial_phex16(datalen);
-				serial_print(",");
-				serial_phex(data[0]);
-				serial_phex(data[1]);
-				serial_phex(data[2]);
-				serial_phex(data[3]);
-				serial_phex(data[4]);
-				serial_phex(data[5]);
-				serial_print("\n");
+          serial_print("Desc found, ");
+          serial_phex32((uint32_t)data);
+          serial_print(",");
+          serial_phex16(datalen);
+          serial_print(",");
+          serial_phex(data[0]);
+          serial_phex(data[1]);
+          serial_phex(data[2]);
+          serial_phex(data[3]);
+          serial_phex(data[4]);
+          serial_phex(data[5]);
+          serial_print("\n");
 #endif
-				goto send;
-			}
-		}
-		//serial_print("desc: not found\n");
-		endpoint0_stall();
-		return;
+          goto send;
+        }
+      }
+      //serial_print("desc: not found\n");
+      endpoint0_stall();
+      return;
 #if defined(CDC_STATUS_INTERFACE)
 	  case 0x2221: // CDC_SET_CONTROL_LINE_STATE
 		usb_cdc_line_rtsdtr_millis = systick_millis_count;

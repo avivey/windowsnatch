@@ -68,7 +68,7 @@
 static uint8_t device_descriptor[] = {
         18,                                     // bLength
         1,                                      // bDescriptorType
-        0x01, 0x01,                             // bcdUSB
+        0x02, 0x00,                             // bcdUSB (USB spec Version)
 #ifdef DEVICE_CLASS
         DEVICE_CLASS,                           // bDeviceClass
 #else
@@ -389,7 +389,14 @@ static uint8_t flightsim_report_desc[] = {
 //
 #define CONFIG_HEADER_DESCRIPTOR_SIZE	9
 
-#define CDC_IAD_DESCRIPTOR_POS		CONFIG_HEADER_DESCRIPTOR_SIZE
+#define USB_AVIV_WINUSB_DESCRIPTOR_POS		CONFIG_HEADER_DESCRIPTOR_SIZE
+#ifdef  USB_AVIV_WINUSB_INTERFACE
+#define USB_AVIV_WINUSB_DESCRIPTOR_SIZE		9+7
+#else
+#define USB_AVIV_WINUSB_DESCRIPTOR_SIZE		0
+#endif
+
+#define CDC_IAD_DESCRIPTOR_POS		USB_AVIV_WINUSB_DESCRIPTOR_POS+USB_AVIV_WINUSB_DESCRIPTOR_SIZE
 #ifdef  CDC_IAD_DESCRIPTOR
 #define CDC_IAD_DESCRIPTOR_SIZE		8
 #else
@@ -509,6 +516,27 @@ static uint8_t config_descriptor[CONFIG_DESC_SIZE] = {
         0,                                      // iConfiguration
         0xC0,                                   // bmAttributes
         50,                                     // bMaxPower
+
+#ifdef  USB_AVIV_WINUSB_INTERFACE
+        // interface descriptor, USB spec 9.6.5, page 267-269, Table 9-12
+        9,                                      // bLength
+        4,                                      // bDescriptorType
+        USB_AVIV_WINUSB_INTERFACE,			// bInterfaceNumber
+        0,                                      // bAlternateSetting
+        1,                                      // bNumEndpoints
+        0xFF,                                   // bInterfaceClass - vendor specific
+        0x02,                                   // bInterfaceSubClass
+        0x01,                                   // bInterfaceProtocol
+        0,                                      // iInterface
+
+        7,                                      // bLength
+        5,                                      // bDescriptorType
+        USB_AVIV_WINUSB_ENDPOINT | 0x80,                // bEndpointAddress
+        0x03,                                   // bmAttributes (0x03=intr)
+        16, 0,                        // wMaxPacketSize
+        64,                                     // bInterval
+
+#endif
 
 #ifdef CDC_IAD_DESCRIPTOR
         // interface association descriptor, USB ECN, Table 9-Z
@@ -1224,6 +1252,16 @@ struct usb_string_descriptor_struct usb_string_serial_number_default = {
         {0,0,0,0,0,0,0,0,0,0}
 };
 
+#ifdef USB_AVIV_WINUSB
+// TODO:
+#define WINUSB_VENDOR_CODE 0x0003
+struct usb_string_descriptor_struct usb_string_winusb = {
+        18,
+        3,
+        {'M','S','F','T','1','0','0', WINUSB_VENDOR_CODE}
+};
+#endif
+
 void usb_init_serialnumber(void)
 {
 	char buf[11];
@@ -1305,6 +1343,10 @@ const usb_descriptor_list_t usb_descriptor_list[] = {
         {0x0301, 0x0409, (const uint8_t *)&usb_string_manufacturer_name, 0},
         {0x0302, 0x0409, (const uint8_t *)&usb_string_product_name, 0},
         {0x0303, 0x0409, (const uint8_t *)&usb_string_serial_number, 0},
+#ifdef USB_AVIV_WINUSB
+  {0x03EE, 0x0000, (const uint8_t *)&usb_string_winusb, 0},
+  {0x03EE, 0x0409, (const uint8_t *)&usb_string_winusb, 0},
+#endif
 	{0, 0, NULL, 0}
 };
 
