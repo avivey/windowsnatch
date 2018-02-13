@@ -1,5 +1,7 @@
 #include "WProgram.h"
 
+#include "hacks.h"
+
 #define YELLOW 13
 #define GREEN 14
 #define RED 15
@@ -46,4 +48,14 @@ return 0;
      delay(30);
   }
   // goto start;
+}
+
+// hack debug lights.
+void aviv_debug_on(uint8_t led)
+{
+  digitalWriteFast(led, HIGH);
+}
+void aviv_debug_off(uint8_t led)
+{
+  digitalWriteFast(led, LOW);
 }
