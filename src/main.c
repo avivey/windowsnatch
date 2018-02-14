@@ -15,12 +15,13 @@ int main(void)
 	pinMode(RED, OUTPUT);
 	pinMode(GREEN, OUTPUT);
 	pinMode(BUTTON, INPUT);
+  return 0;
 
-  int i = 3;
-	while (i--) {
+  int flash_counter = 2;
+	while (flash_counter--) {
 		digitalWriteFast(YELLOW, HIGH);
     delay(100);
-		digitalWriteFast(RED, HIGH);
+		aviv_debug_on(LED_RED);
     delay(100);
 		digitalWriteFast(GREEN, HIGH);
 		delay(100);

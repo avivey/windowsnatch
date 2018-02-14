@@ -46,6 +46,8 @@
 #include "usb_names.h"
 #include <string.h> // for memset
 
+#include "hacks.h"
+
 // buffer descriptor table
 
 typedef struct {
@@ -92,22 +94,22 @@ static uint8_t tx_state[NUM_ENDPOINTS];
 
 
 static union {
- struct {
-  union {
-   struct {
-	uint8_t bmRequestType;
-	uint8_t bRequest;
-   };
-	uint16_t wRequestAndType;
+  struct {
+    union {
+      struct {
+        uint8_t bmRequestType;
+        uint8_t bRequest;
+      };
+      uint16_t wRequestAndType;
+    };
+    uint16_t wValue;
+    uint16_t wIndex;
+    uint16_t wLength;
   };
-	uint16_t wValue;
-	uint16_t wIndex;
-	uint16_t wLength;
- };
- struct {
-	uint32_t word1;
-	uint32_t word2;
- };
+  struct {
+    uint32_t word1;
+    uint32_t word2;
+  };
 } setup;
 
 
@@ -175,8 +177,14 @@ static void usb_setup(void)
 	int i;
 
 	switch (setup.wRequestAndType) {
+#ifdef USB_AVIV_WINUSB
+    case 0x03C0:   // 0x03 part is  WINUSB_VENDOR_CODE
+      // AVIV
+      aviv_debug_on(LED_RED);
+      break;
+#endif
 	  case 0x0500: // SET_ADDRESS
-		break;
+      break;
 	  case 0x0900: // SET_CONFIGURATION
 		//serial_print("configure\n");
 		usb_configuration = setup.wValue;
@@ -461,7 +469,7 @@ static void usb_setup(void)
 		break;
 #endif
 	  default:
-		endpoint0_stall();
+      endpoint0_stall();
 		return;
 	}
 	send:
@@ -573,7 +581,7 @@ static void usb_control(uint32_t stat)
 		USB0_CTL = USB_CTL_USBENSOFEN; // clear TXSUSPENDTOKENBUSY bit
 		break;
 	case 0x01:  // OUT transaction received from host
-	case 0x02:
+	case 0x02:  // Handshake - ACK? --aviv
 		//serial_print("PID=OUT\n");
 #ifdef CDC_STATUS_INTERFACE
 		if (setup.wRequestAndType == 0x2021 /*CDC_SET_LINE_CODING*/) {
@@ -637,10 +645,11 @@ static void usb_control(uint32_t stat)
 		}
 
 		break;
-	//default:
+	default:
 		//serial_print("PID=unknown:");
 		//serial_phex(pid);
 		//serial_print("\n");
+		break;
 	}
 	USB0_CTL = USB_CTL_USBENSOFEN; // clear TXSUSPENDTOKENBUSY bit
 }
