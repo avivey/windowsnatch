@@ -1206,6 +1206,33 @@ static uint8_t config_descriptor[CONFIG_DESC_SIZE] = {
 #endif // KEYMEDIA_INTERFACE
 };
 
+#ifdef USB_AVIV_WINUSB
+// TODO:
+#define WINUSB_VENDOR_CODE 0x00B3
+static struct usb_string_descriptor_struct usb_string_winusb = {
+        18,
+        3,
+        {'M','S','F','T','1','0','0', WINUSB_VENDOR_CODE}
+};
+
+// Got the doc for this here: https://github.com/pbatard/libwdi/wiki/WCID-Devices
+// Note endian-ness - wide values have their bytes "reversed".
+static uint8_t xxx[WINUSB_FEATURE_DESCRIPTOR_SIZE] = {
+  WINUSB_FEATURE_DESCRIPTOR_SIZE, 0, 0, 0,    // Length (4 bytes) - 40
+  0, 0x01,        // protocol version (2 bytes, BCD) - "1.0"
+  0x04, 0x00,     // Descriptor Index (2 bytes) - 4
+  1,              // Number of sections
+  0, 0, 0, 0, 0, 0, 0, // 7 null bytes (reserved)
+                  //---- Start section 1
+  USB_AVIV_WINUSB_INTERFACE, // interface number
+  0x01,              // reserved
+  'W', 'I', 'N', 'U', 'S', 'B', 0, 0, // "Compatible ID" - 8 bytes, ascii
+  0, 0, 0, 0, 0, 0, 0, 0, // "subCompatible ID" - 8 bytes, ascii (unused)
+  0, 0, 0, 0, 0, 0, // 6 reserved bytes.
+};
+const uint8_t *winusb_feature_descriptor = xxx;
+
+#endif
 
 // **************************************************************
 //   String Descriptors
@@ -1251,16 +1278,6 @@ struct usb_string_descriptor_struct usb_string_serial_number_default = {
         3,
         {0,0,0,0,0,0,0,0,0,0}
 };
-
-#ifdef USB_AVIV_WINUSB
-// TODO:
-#define WINUSB_VENDOR_CODE 0x0003
-struct usb_string_descriptor_struct usb_string_winusb = {
-        18,
-        3,
-        {'M','S','F','T','1','0','0', WINUSB_VENDOR_CODE}
-};
-#endif
 
 void usb_init_serialnumber(void)
 {
@@ -1345,7 +1362,7 @@ const usb_descriptor_list_t usb_descriptor_list[] = {
         {0x0303, 0x0409, (const uint8_t *)&usb_string_serial_number, 0},
 #ifdef USB_AVIV_WINUSB
   {0x03EE, 0x0000, (const uint8_t *)&usb_string_winusb, 0},
-  {0x03EE, 0x0409, (const uint8_t *)&usb_string_winusb, 0},
+  // {0x03EE, 0x0409, (const uint8_t *)&usb_string_winusb, 0}, // this one is not supposed to exist
 #endif
 	{0, 0, NULL, 0}
 };

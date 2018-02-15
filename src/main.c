@@ -60,3 +60,15 @@ void aviv_debug_off(uint8_t led)
 {
   digitalWriteFast(led, LOW);
 }
+
+void aviv_debug_number(uint8_t number) {
+  int y, r, g;
+  if (number > 7) number = 7;
+  y = (number & 0b001) ? HIGH : LOW;
+  r = (number & 0b010) ? HIGH : LOW;
+  g = (number & 0b100) ? HIGH : LOW;
+
+  digitalWriteFast(YELLOW, y);
+  digitalWriteFast(RED, r);
+  digitalWriteFast(GREEN, g);
+}

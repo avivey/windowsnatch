@@ -146,7 +146,6 @@ static void endpoint0_stall(void)
 	USB0_ENDPT0 = USB_ENDPT_EPSTALL | USB_ENDPT_EPRXEN | USB_ENDPT_EPTXEN | USB_ENDPT_EPHSHK;
 }
 
-
 static void endpoint0_transmit(const void *data, uint32_t len)
 {
 #if 0
@@ -164,7 +163,6 @@ static void endpoint0_transmit(const void *data, uint32_t len)
 }
 
 static uint8_t reply_buffer[8];
-
 static void usb_setup(void)
 {
 	const uint8_t *data = NULL;
@@ -178,9 +176,13 @@ static void usb_setup(void)
 
 	switch (setup.wRequestAndType) {
 #ifdef USB_AVIV_WINUSB
-    case 0x03C0:   // 0x03 part is  WINUSB_VENDOR_CODE
+    case 0xB3C0:   // 0xb3 part is  WINUSB_VENDOR_CODE. C0 is "Device to host"+"Vendor"
       // AVIV
-      aviv_debug_on(LED_RED);
+      data = winusb_feature_descriptor;
+      datalen = WINUSB_FEATURE_DESCRIPTOR_SIZE;
+      if (setup.wLength == 16) aviv_debug_on(LED_YELLOW);
+      if (setup.wLength == 40) aviv_debug_on(LED_GREEN);
+      goto send;
       break;
 #endif
 	  case 0x0500: // SET_ADDRESS
@@ -305,14 +307,14 @@ static void usb_setup(void)
 		// TODO: do we need to clear the data toggle here?
 		break;
 	  case 0x0302: // SET_FEATURE (endpoint)
-		i = setup.wIndex & 0x7F;
-		if (i > NUM_ENDPOINTS || setup.wValue != 0) {
-			// TODO: do we need to handle IN vs OUT here?
-			endpoint0_stall();
-			return;
-		}
-		(*(uint8_t *)(&USB0_ENDPT0 + i * 4)) |= 0x02;
-		// TODO: do we need to clear the data toggle here?
+      i = setup.wIndex & 0x7F;
+      if (i > NUM_ENDPOINTS || setup.wValue != 0) {
+        // TODO: do we need to handle IN vs OUT here?
+        endpoint0_stall();
+        return;
+      }
+      (*(uint8_t *)(&USB0_ENDPT0 + i * 4)) |= 0x02;
+      // TODO: do we need to clear the data toggle here?
 		break;
 	  case 0x0680: // GET_DESCRIPTOR
 	  case 0x0681:

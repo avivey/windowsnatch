@@ -129,7 +129,19 @@ let me know?  http://forum.pjrc.com/forums/4-Suggestions-amp-Bug-Reports
 
   #define USB_AVIV_WINUSB_INTERFACE 0
   #define USB_AVIV_WINUSB_ENDPOINT 1
-
+/*
+  #define RAWHID_USAGE_PAGE	0xFFAB  // recommended: 0xFF00 to 0xFFFF
+  #define RAWHID_USAGE		0x0200  // recommended: 0x0100 to 0xFFFF
+  #define RAWHID_INTERFACE      0	// RawHID
+  #define RAWHID_TX_ENDPOINT    3
+  #define RAWHID_TX_SIZE        64
+  #define RAWHID_TX_INTERVAL    1
+  #define RAWHID_RX_ENDPOINT    4
+  #define RAWHID_RX_SIZE        64
+  #define RAWHID_RX_INTERVAL    1
+  #define ENDPOINT3_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT4_CONFIG	ENDPOINT_RECEIVE_ONLY
+*/
 #elif defined(USB_SERIAL)
   #define VENDOR_ID		0x16C0
   #define PRODUCT_ID		0x0483
@@ -723,5 +735,10 @@ typedef struct {
 extern const usb_descriptor_list_t usb_descriptor_list[];
 #endif // NUM_ENDPOINTS
 #endif // USB_DESC_LIST_DEFINE
+
+#ifdef USB_AVIV_WINUSB
+#define WINUSB_FEATURE_DESCRIPTOR_SIZE 40
+extern const uint8_t *winusb_feature_descriptor;
+#endif
 
 #endif
