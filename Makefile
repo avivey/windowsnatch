@@ -5,9 +5,10 @@ TARGET ?= $(notdir $(CURDIR))
 TEENSY = 36
 
 # Set to 24000000, 48000000, or 96000000 to set CPU core speed
+# This is used for feature detection. And maybe to set the core speed too?
 TEENSY_CORE_SPEED = 48000000
 
-# configurable options
+# USB features options
 OPTIONS = -DUSB_AVIV_WINUSB -DLAYOUT_US_ENGLISH
 
 # directory to build in

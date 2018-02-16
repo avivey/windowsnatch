@@ -1,0 +1,27 @@
+WINUSB support + demo for Teensy 3.6
+====================================
+
+Building
+========
+
+Get the compiler: `arm-none-eabi-*`.
+- Install (untar) Aruduino IDE. Install (via wizard) the Teensyduino add-on.
+- the compiler should be in `/hardware/tools/arm/`.
+- simlink `./tools/` to that tools directory (or copy that in).
+
+To flash the device, either get `teensy_reboot` and `teensy_post_compile` (I
+didn't try those), or find `teensy_loader_cli` in Teensy's website.
+
+Bibliography
+============
+
+- Teensy's website and Teensyduino provide some example Makefile, and the Core
+  code.
+- https://github.com/apmorton/teensy-template provides help in the code layout,
+  and is the origin of my Makefile
+- http://www.beyondlogic.org/usbnutshell/ is a good source about USB protocol
+- Microsoft's docs are on par with other MS docs.
+- https://github.com/pbatard/libwdi/wiki/WCID-Devices has good explanation about
+  building a WINUSB device.
+- http://libusb.info/ - on linux, run `xusb` as root to debug a usb device that
+  isn't playing nice. I couldn't find a way to do this in Windows.
