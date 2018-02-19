@@ -1,6 +1,6 @@
 /* Teensyduino Core Library
  * http://www.pjrc.com/teensy/
- * Copyright (c) 2013 PJRC.COM, LLC.
+ * Copyright (c) 2017 PJRC.COM, LLC.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -93,7 +93,7 @@ extern "C"{
 #define KEY_MEDIA_PREV_TRACK    ( 0xB6 | 0xE400 )
 #define KEY_MEDIA_STOP          ( 0xB7 | 0xE400 )
 #define KEY_MEDIA_EJECT         ( 0xB8 | 0xE400 )
-#define KEY_MEDIA_RANDOM_PLAY   ( 0xB0 | 0xE400 )
+#define KEY_MEDIA_RANDOM_PLAY   ( 0xB9 | 0xE400 )
 #define KEY_MEDIA_PLAY_PAUSE    ( 0xCD | 0xE400 )
 #define KEY_MEDIA_PLAY_SKIP     ( 0xCE | 0xE400 )
 #define KEY_MEDIA_MUTE          ( 0xE2 | 0xE400 )

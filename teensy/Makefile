@@ -5,10 +5,11 @@ TARGET ?= $(notdir $(CURDIR))
 TEENSY = 36
 
 # Set to 24000000, 48000000, or 96000000 to set CPU core speed
+# This is used for feature detection. And maybe to set the core speed too?
 TEENSY_CORE_SPEED = 48000000
 
-# configurable options
-OPTIONS = -DUSB_SERIAL -DLAYOUT_US_ENGLISH
+# USB features options - see usb_desc.h
+OPTIONS = -D USB_RAWHID -DLAYOUT_US_ENGLISH
 
 # directory to build in
 BUILDDIR = $(abspath $(CURDIR)/build)
@@ -40,15 +41,22 @@ LIBRARYPATH = libraries
 # path location for the arm-none-eabi compiler
 COMPILERPATH = $(TOOLSPATH)/arm/bin
 
+# Arduino IDE compatibility
+ifdef IDE_COMPAT_MODE
+  IDE_COMPAT_OPTIONS = -DARDUINO=10805 -DTEENSYDUINO=124
+endif
+
 #************************************************************************
 # Settings below this point usually do not need to be edited
 #************************************************************************
 
 # CPPFLAGS = compiler options for C and C++
-CPPFLAGS = -Wall -g -Os -mthumb -ffunction-sections -fdata-sections -nostdlib -MMD $(OPTIONS) -DTEENSYDUINO=124 -DF_CPU=$(TEENSY_CORE_SPEED) -Isrc -I$(COREPATH)
+CPPFLAGS = -Wall -g -Os -mthumb -ffunction-sections -fdata-sections \
+           -nostdlib -MMD $(OPTIONS) $(IDE_COMPAT_OPTIONS) \
+           -DF_CPU=$(TEENSY_CORE_SPEED) -Isrc -I$(COREPATH)
 
 # compiler options for C++ only
-CXXFLAGS = -std=gnu++0x -felide-constructors -fno-exceptions -fno-rtti
+CXXFLAGS = -std=gnu++14 -felide-constructors -fno-exceptions -fno-rtti
 
 # compiler options for C only
 CFLAGS =
@@ -115,14 +123,15 @@ L_INC := $(foreach lib,$(filter %/, $(wildcard $(LIBRARYPATH)/*/)), -I$(lib))
 SOURCES := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o) $(INO_FILES:.ino=.o) $(TC_FILES:.c=.o) $(TCPP_FILES:.cpp=.o) $(LC_FILES:.c=.o) $(LCPP_FILES:.cpp=.o)
 OBJS := $(foreach src,$(SOURCES), $(BUILDDIR)/$(src))
 
-all: hex
+default: hex
 
 build: $(TARGET).elf
 
 hex: $(TARGET).hex
 
 upload_to_board: $(TARGET).hex
-	@$(abspath $(TOOLSPATH))/teensy_post_compile -file="$(basename $<)" -path=$(CURDIR) -tools="$(abspath $(TOOLSPATH))"
+	@$(abspath $(TOOLSPATH))/teensy_post_compile \
+    -file="$(basename $<)" -path=$(CURDIR) -tools="$(abspath $(TOOLSPATH))"
 
 reboot:
 	@-$(abspath $(TOOLSPATH))/teensy_reboot
@@ -130,26 +139,26 @@ reboot:
 upload: upload_to_board reboot
 
 $(BUILDDIR)/%.o: %.c
-	@echo -e "[CC]\t$<"
+	@echo "[CC]\t$<"
 	@mkdir -p "$(dir $@)"
 	@$(CC) $(CPPFLAGS) $(CFLAGS) $(L_INC) -o "$@" -c "$<"
 
 $(BUILDDIR)/%.o: %.cpp
-	@echo -e "[CXX]\t$<"
+	@echo "[C++]\t$<"
 	@mkdir -p "$(dir $@)"
 	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(L_INC) -o "$@" -c "$<"
 
 $(BUILDDIR)/%.o: %.ino
-	@echo -e "[CXX]\t$<"
+	@echo "[C++]\t$<"
 	@mkdir -p "$(dir $@)"
 	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(L_INC) -o "$@" -x c++ -include Arduino.h -c "$<"
 
 $(TARGET).elf: $(OBJS) $(LDSCRIPT)
-	@echo -e "[LD]\t$@"
+	@echo "[LD]\t$@"
 	@$(CC) $(LDFLAGS) -o "$@" $(OBJS) $(LIBS)
 
 %.hex: %.elf
-	@echo -e "[HEX]\t$@"
+	@echo "[HEX]\t$@"
 	@$(SIZE) "$<"
 	@$(OBJCOPY) -O ihex -R .eeprom "$<" "$@"
 
@@ -157,6 +166,4 @@ $(TARGET).elf: $(OBJS) $(LDSCRIPT)
 -include $(OBJS:.o=.d)
 
 clean:
-	@echo Cleaning...
-	@rm -rf "$(BUILDDIR)"
-	@rm -f "$(TARGET).elf" "$(TARGET).hex"
+	rm -rf "$(BUILDDIR)" "$(TARGET).elf" "$(TARGET).hex"
