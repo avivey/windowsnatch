@@ -1,5 +1,11 @@
-WINUSB support + demo for Teensy 3.6
+WINUSB support
 ====================================
+
+After making this work, I learnt that the Raw HID feature has essentially all
+the features I want (ie, no driver + low level packet communications). I also
+don't know how to make the WinUSB stuff compatible with the rest of the code, so
+I'm just going to leave this like this in case I need to one day to WinUSB for
+some other reason.
 
 Building
 ========
@@ -17,7 +23,8 @@ Bibliography
 
 - Teensy's website and Teensyduino provide some example Makefile, and the Core
   code.
-- https://github.com/apmorton/teensy-template provides help in the code layout,
+- `teensy-core` appears to be from github/PaulStoffregen/cores@eae654412c893
+- github/apmorton/teensy-template provides help in the code layout,
   and is the origin of my Makefile
 - http://www.beyondlogic.org/usbnutshell/ is a good source about USB protocol
 - Microsoft's docs are on par with other MS docs.
