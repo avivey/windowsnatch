@@ -98,9 +98,9 @@ static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     //  what we're doing here.
     return 0;
 
-    //  This is the message which brings tidings of mouse events involving
-    //  our tray icon.  We defined it ourselves.  See AddTrayIcon() for
-    //  details of how we told Windows about it.
+  //  This is the message which brings tidings of mouse events involving
+  //  our tray icon.  We defined it ourselves.  See AddTrayIcon() for
+  //  details of how we told Windows about it.
   case APPWM_TRAYICON:
     SetForegroundWindow(hWnd);
 
@@ -268,7 +268,7 @@ void OnInitMenuPopup(HWND hWnd, HMENU hPop, UINT uID)
   //  stub
 }
 
-void RegisterApplicationClass(HINSTANCE hInstance)
+void RegisterTrayIcon(HINSTANCE hInstance)
 {
   WNDCLASS wclx;
   memset(&wclx, 0, sizeof(wclx));

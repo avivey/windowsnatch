@@ -26,6 +26,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, LPSTR cmdline, int show)
   HWND hWnd;
   MSG msg;
   BOOL bRet;
+  int iRetValue = 9;
   HWINEVENTHOOK g_hook;
   DWORD hProc = 0; //putty proc
 
@@ -42,7 +43,9 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, LPSTR cmdline, int show)
     return 3;
   }
 
-  RegisterApplicationClass(hInst);
+#ifdef USE_TRAY_ICON
+  RegisterTrayIcon(hInst);
+#endif
 
   hWnd = CreateWindow(
            THIS_CLASSNAME, THIS_TITLE,
@@ -59,7 +62,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, LPSTR cmdline, int show)
               WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
   if (g_hook == 0) {
     printf("Failed to SetWinEventHook\n");
-    return 2;
+    iRetValue = 2;
+    goto cleanup;
   }
 
   //  Message loop
@@ -70,10 +74,17 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, LPSTR cmdline, int show)
     TranslateMessage(&msg);
     DispatchMessage(&msg);
   }
+  iRetValue = 0;
 
-  UnregisterClass(THIS_CLASSNAME, hInst);
+cleanup:
 
-  return 0;
+  UnhookWinEvent(g_hook);
+  DestroyWindow(hWnd);
+#ifdef USE_TRAY_ICON
+  UnregisterTrayIcon(hInst);
+#endif
+
+  return iRetValue;
 }
 
 void showMagic()

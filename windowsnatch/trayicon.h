@@ -6,6 +6,7 @@
 
 #define HELP_ABOUT _T("Extract status from the ether.")
 
+// TODO these definitions are used in other contexts too; Cleanup.
 #define THIS_CLASSNAME      _T("WindowSnatch")
 #define THIS_TITLE          _T("WindowSnatch")
 
@@ -24,6 +25,9 @@ enum {
 void (*app_close_listener)(HWND);
 LRESULT(*WindowProc_fallback)(HWND, UINT, WPARAM, LPARAM);
 
-void    RegisterApplicationClass(HINSTANCE hInstance);
+void RegisterTrayIcon(HINSTANCE hInstance);
+inline void UnregisterTrayIcon(HINSTANCE hInstance) {
+  UnregisterClass(THIS_CLASSNAME, hInstance);
+}
 
 #endif
