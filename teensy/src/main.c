@@ -1,84 +1,77 @@
 #include "WProgram.h"
 #include "usb_rawhid.h"
 
-// this is arduion-ism
-void setup();
-void loop();
+
+#define YELLOW 13
+#define RED 3
+#define GREEN 5
+#define BUTTON 12
+
+void aviv_debug_number(uint8_t number);
+
+
 
 int main(void)
 {
-	setup();
-
-	while (1) {
-    loop();
-	}
-}
-
-
-
-
-// RawHID packets are always 64 bytes
-byte buffer[64];
-unsigned long next_send;
-unsigned int packetCount = 0;
-
-void setup() {
-  // Serial.begin(9600);
-  // Serial.println(F("RawHID Example"));
-  for (int i=0; i<7; i++) {
-    pinMode(i, OUTPUT);
-  }
-    pinMode(13, OUTPUT);
-    pinMode(15, OUTPUT);
-    next_send = millis() + 2000;
-    pinMode(12, INPUT_PULLDOWN);
-}
-
-
-void loop() {
   int n;
-  n = usb_rawhid_recv(buffer, 0); // 0 timeout = do not wait
-  if (n > 0) {
-    // the computer sent a message.  Display the bits
-    // of the first byte on pin 0 to 7.  Ignore the
-    // other 63 bytes!
-    // Serial.print(F("Received packet, first byte: "));
-    // Serial.println((int)buffer[0]);
-    for (int i=0; i<8; i++) {
-      int b = buffer[0] & (1 << i);
-      digitalWrite(i, b);
-    }
-  }
-  // every 2 seconds, send a packet to the computer
-  if (next_send < millis()) {
-    next_send = millis() + 2000;
-    // first 2 bytes are a signature
-    buffer[0] = 0xAB;
-    buffer[1] = 0xCD;
-    // next 24 bytes are analog measurements
-    for (int i=0; i<12; i++) {
-      int val = analogRead(i);
-      buffer[i * 2 + 2] = highByte(val);
-      buffer[i * 2 + 3] = lowByte(val);
-    }
-    buffer[3] = digitalRead(12);
-    // fill the rest with zeros
-    for (int i=26; i<62; i++) {
-      buffer[i] = 0;
-    }
-    // and put a count of packets sent at the end
-    buffer[62] = highByte(packetCount);
-    buffer[63] = lowByte(packetCount);
-    // actually send the packet
-    n = usb_rawhid_send(buffer, 1000);
+// RawHID packets are always 64 bytes
+  byte buffer[64];
+  unsigned long next_send;
+  unsigned int packetCount = 0;
+
+  pinMode(YELLOW, OUTPUT);
+  pinMode(RED, OUTPUT);
+  pinMode(GREEN, OUTPUT);
+  pinMode(BUTTON, INPUT_PULLDOWN);
+  next_send = millis() + 2000;
+  aviv_debug_number(7);
+
+  while (1) {
+    n = usb_rawhid_recv(buffer, 0); // 0 timeout = do not wait
     if (n > 0) {
-      // Serial.print(F("Transmit packet "));
-      // Serial.println(packetCount);
-      packetCount = packetCount + 1;
-      digitalWrite(15, HIGH);
-    } else {
-      // Serial.println(F("Unable to transmit packet"));
-      digitalWrite(13, HIGH);
+      // the computer sent a message.
+      n = buffer[0] & 0b111;
+      aviv_debug_number(n);
     }
+
+    // every 2 seconds, send a packet to the computer
+    if (next_send < millis()) {
+      next_send = millis() + 2000;
+
+      memset(buffer, 0, 64);
+
+      // first 2 bytes are a signature
+      buffer[0] = 0xAB;
+      buffer[1] = 0xCD;
+
+      buffer[3] = digitalRead(BUTTON);
+
+      // and put a count of packets sent at the end
+      buffer[62] = highByte(packetCount);
+      buffer[63] = lowByte(packetCount);
+
+      // actually send the packet
+      n = usb_rawhid_send(buffer, 1000);
+      if (n > 0) {
+        packetCount = packetCount + 1;
+      } else {
+        // Serial.println(F("Unable to transmit packet"));
+        analogWrite(RED, 20);
+      }
+    }
+
   }
+}
+
+
+void aviv_debug_number(uint8_t number) {
+  int y, r, g;
+  if (number > 7) number = 7;
+  y = (number & 0b001) ? HIGH : LOW;
+  r = (number & 0b010) ? HIGH : LOW;
+  g = (number & 0b100) ? HIGH : LOW;
+
+  digitalWriteFast(YELLOW, y);
+  digitalWriteFast(RED, r);
+  digitalWriteFast(GREEN, g);
 }
