@@ -1,0 +1,25 @@
+#! /usr/bin/env bash
+function set-title ()
+{
+    echo -ne "\e]2;$@\007"
+}
+
+  # y = (number & 0b001) ? HIGH : LOW;
+  # r = (number & 0b010) ? HIGH : LOW;
+  # g = (number & 0b100) ? HIGH : LOW;
+
+function magic ()
+{
+  set-title "target$1"
+}
+
+while read -s -n1 v
+do
+  case $v in
+    r ) magic '\011' ;;
+    g ) magic '\037' ;;
+    y ) magic '\036' ;;
+    * ) magic ' ' ;;
+  esac
+
+done
