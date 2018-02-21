@@ -25,8 +25,8 @@ enum {
 void (*app_close_listener)(HWND);
 LRESULT(*WindowProc_fallback)(HWND, UINT, WPARAM, LPARAM);
 
-void RegisterTrayIcon(HINSTANCE hInstance);
-inline void UnregisterTrayIcon(HINSTANCE hInstance) {
+void RegisterApplicationClass(HINSTANCE hInstance);
+inline void UnregisterApplicationClass(HINSTANCE hInstance) {
   UnregisterClass(THIS_CLASSNAME, hInstance);
 }
 

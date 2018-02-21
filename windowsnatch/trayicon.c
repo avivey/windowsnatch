@@ -268,7 +268,7 @@ void OnInitMenuPopup(HWND hWnd, HMENU hPop, UINT uID)
   //  stub
 }
 
-void RegisterTrayIcon(HINSTANCE hInstance)
+void RegisterApplicationClass(HINSTANCE hInstance)
 {
   WNDCLASS wclx;
   memset(&wclx, 0, sizeof(wclx));

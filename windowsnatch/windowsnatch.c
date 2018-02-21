@@ -43,9 +43,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, LPSTR cmdline, int show)
     return 3;
   }
 
-#ifdef USE_TRAY_ICON
-  RegisterTrayIcon(hInst);
-#endif
+  RegisterApplicationClass(hInst);
 
   hWnd = CreateWindow(
            THIS_CLASSNAME, THIS_TITLE,
@@ -80,9 +78,7 @@ cleanup:
 
   UnhookWinEvent(g_hook);
   DestroyWindow(hWnd);
-#ifdef USE_TRAY_ICON
-  UnregisterTrayIcon(hInst);
-#endif
+  UnregisterApplicationClass(hInst);
 
   return iRetValue;
 }
