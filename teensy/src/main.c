@@ -16,15 +16,16 @@ int main(void)
   int n;
 // RawHID packets are always 64 bytes
   byte buffer[64];
-  unsigned long next_send;
   unsigned int packetCount = 0;
 
   pinMode(YELLOW, OUTPUT);
   pinMode(RED, OUTPUT);
   pinMode(GREEN, OUTPUT);
   pinMode(BUTTON, INPUT_PULLDOWN);
-  next_send = millis() + 2000;
   aviv_debug_number(7);
+
+  int to_release = 0;
+  memset(buffer, 0, 64);
 
   while (1) {
     n = usb_rawhid_recv(buffer, 0); // 0 timeout = do not wait
@@ -34,11 +35,10 @@ int main(void)
       aviv_debug_number(n);
     }
 
-    // every 2 seconds, send a packet to the computer
-    if (next_send < millis()) {
-      next_send = millis() + 2000;
+    int is_pressed = digitalRead(BUTTON);
 
-      memset(buffer, 0, 64);
+    if (is_pressed && !to_release) {
+      to_release = 1;
 
       // first 2 bytes are a signature
       buffer[0] = 0xAB;
@@ -59,7 +59,11 @@ int main(void)
         analogWrite(RED, 20);
       }
     }
+    if (!is_pressed && to_release) {
+      to_release = 0;
+    }
 
+    delay(10);
   }
 }
 
