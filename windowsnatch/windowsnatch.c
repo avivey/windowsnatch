@@ -24,7 +24,6 @@ void WINAPI handleTeensyMessage(DWORD, DWORD, LPOVERLAPPED);
 
 char rawhid_buf[64];
 
-
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, LPSTR cmdline, int show)
 {
   HWND hWnd;
@@ -100,15 +99,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, LPSTR cmdline, int show)
       DispatchMessage(&msg);
     }
 
-    /*    count = rawhid_recv(rawhid_handle, rawhid_buf, 64, 220);
-        if (count < 0) {
-          printf("teensy gone away\n");
-          rawhid_close(rawhid_handle);
-          break;
-        }
-        if (count > 0) {
-          printf("teensy speaks\n");
-        }*/
   }
 stop_loop:
 
@@ -126,7 +116,34 @@ cleanup:
 void WINAPI handleTeensyMessage(DWORD dwErr, DWORD cbBytesRead, LPOVERLAPPED lpOverLap) {
   // printf("got teensy msg\n");
 
-  rawhid_async_recv_complete(0, rawhid_buf, 64);
+  int y =
+    rawhid_async_recv_complete(0, rawhid_buf, 64);
+
+
+  printf("%d 0x%02X %02X %02X %02X \n", y, (byte)rawhid_buf[0], (byte) rawhid_buf[1], (byte)rawhid_buf[3], (byte)rawhid_buf[4]);
+  if (rawhid_buf[3]) {
+    // printf("MM\n");
+    PostMessage(targetWindow, WM_KEYDOWN, VK_UP, 0);
+    PostMessage(targetWindow, WM_KEYDOWN, VK_RETURN, 0);
+  }
+
+  if (rawhid_buf[4]) {
+    printf("makeidup\n");
+    // int ok = SetForegroundWindow(targetWindow);
+    FLASHWINFO x = {
+      sizeof(FLASHWINFO),
+      targetWindow,
+      FLASHW_ALL,
+      5,
+      0
+    };
+    int ok = FlashWindowEx(&x);
+    // int ok = BringWindowToTop(targetWindow);
+    if (ok == 0) {
+      printf("didnt work\n");
+    }
+    // SwitchToThisWindow (targetWindow, TRUE);
+  }
 
   // do another one
   rawhid_async_recv(0, &handleTeensyMessage);
@@ -141,8 +158,9 @@ void showMagic()
   int len = GetWindowText(targetWindow, buff, LEN_BUFF_LONG);
   // printf("Title len = %d\n[%S]\n", len, buff);
 
+
   TCHAR magicMarker =
-    len > lstrlen(targetTitle) ? buff[lstrlen(targetTitle)] : 0;
+    len > lstrlen(targetTitle) ? buff[len - 1] : 0;
   switch (magicMarker) {
   case 0:
     printf("Too short");

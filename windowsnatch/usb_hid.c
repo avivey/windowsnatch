@@ -146,17 +146,15 @@ int rawhid_async_recv_complete(int num, void *buf, int len) {
   hid = get_hid(num);
 
 
-  if (!GetOverlappedResult(hid->handle, &async_overlap, &n, FALSE)) goto return_error;
+  if (!GetOverlappedResult(hid->handle, &async_overlap, &n, FALSE))
+    goto return_error;
   if (n <= 0) return n;
-
   async_read_in_flight = FALSE;
-  return 99;
 
   n--;
   if (n > len) n = len;
   memcpy(buf, async_buff + 1, n);
   return n;
-
 
 return_error:
   print_win32_err();
