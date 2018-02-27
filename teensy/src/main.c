@@ -1,14 +1,13 @@
 #include "WProgram.h"
 #include "usb_rawhid.h"
 
+#include "keydown.h"
 
 #define YELLOW 13
 #define RED 3
 #define GREEN 5
-#define BUTTON 12
 
 void aviv_debug_number(uint8_t number);
-
 
 
 int main(void)
@@ -21,10 +20,9 @@ int main(void)
   pinMode(YELLOW, OUTPUT);
   pinMode(RED, OUTPUT);
   pinMode(GREEN, OUTPUT);
-  pinMode(BUTTON, INPUT_PULLDOWN);
+  init_buttons();
   aviv_debug_number(7);
 
-  int to_release = 0;
   memset(buffer, 0, 64);
 
   while (1) {
@@ -35,16 +33,12 @@ int main(void)
       aviv_debug_number(n);
     }
 
-    int is_pressed = digitalRead(BUTTON);
-
-    if (is_pressed && !to_release) {
-      to_release = 1;
-
+    if (is_keydown(BUTTON1)) {
       // first 2 bytes are a signature
       buffer[0] = 0xAB;
       buffer[1] = 0xCD;
 
-      buffer[3] = digitalRead(BUTTON);
+      buffer[3] = 1;
 
       // and put a count of packets sent at the end
       buffer[62] = highByte(packetCount);
@@ -58,9 +52,6 @@ int main(void)
         // Serial.println(F("Unable to transmit packet"));
         analogWrite(RED, 20);
       }
-    }
-    if (!is_pressed && to_release) {
-      to_release = 0;
     }
 
     delay(10);
