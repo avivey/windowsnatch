@@ -5,7 +5,8 @@
 
 #define YELLOW 13
 #define RED 3
-#define GREEN 5
+#define GREEN 4
+#define BLUE 5
 
 void aviv_debug_number(uint8_t number);
 
@@ -20,6 +21,7 @@ int main(void)
   pinMode(YELLOW, OUTPUT);
   pinMode(RED, OUTPUT);
   pinMode(GREEN, OUTPUT);
+  pinMode(BLUE, OUTPUT);
   init_buttons();
   aviv_debug_number(7);
 
@@ -33,12 +35,16 @@ int main(void)
       aviv_debug_number(n);
     }
 
-    if (is_keydown(BUTTON1)) {
+    int keydown1 = is_keydown(BUTTON1);
+    int keydown2 = is_keydown(BUTTON2);
+
+    if (keydown1 || keydown2) {
       // first 2 bytes are a signature
       buffer[0] = 0xAB;
       buffer[1] = 0xCD;
 
-      buffer[3] = 1;
+      buffer[3] = keydown1;
+      buffer[4] = keydown2;
 
       // and put a count of packets sent at the end
       buffer[62] = highByte(packetCount);
@@ -48,9 +54,11 @@ int main(void)
       n = usb_rawhid_send(buffer, 1000);
       if (n > 0) {
         packetCount = packetCount + 1;
+        digitalWriteFast(YELLOW, LOW);
       } else {
         // Serial.println(F("Unable to transmit packet"));
-        analogWrite(RED, 20);
+        digitalWriteFast(YELLOW, HIGH);
+       // analogWrite(YELLOW, 80);
       }
     }
 
@@ -58,15 +66,14 @@ int main(void)
   }
 }
 
-
 void aviv_debug_number(uint8_t number) {
-  int y, r, g;
+  int r, g, b;
   if (number > 7) number = 7;
-  y = (number & 0b001) ? HIGH : LOW;
-  r = (number & 0b010) ? HIGH : LOW;
-  g = (number & 0b100) ? HIGH : LOW;
+  r = (number & 0b100) ? HIGH : LOW;
+  g = (number & 0b010) ? HIGH : LOW;
+  b = (number & 0b001) ? HIGH : LOW;
 
-  digitalWriteFast(YELLOW, y);
   digitalWriteFast(RED, r);
   digitalWriteFast(GREEN, g);
+  digitalWriteFast(BLUE, b);
 }
