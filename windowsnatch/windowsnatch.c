@@ -28,7 +28,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, LPSTR cmdline, int show)
 {
   HWND hWnd;
   MSG msg;
-  // BOOL bRet;
   int iRetValue = 9;
   HWINEVENTHOOK g_hook;
   DWORD hProc = 0; //putty proc
@@ -56,7 +55,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, LPSTR cmdline, int show)
 
   showMagic();
 
-
   RegisterApplicationClass(hInst);
 
   hWnd = CreateWindow(
@@ -80,14 +78,14 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, LPSTR cmdline, int show)
 
   //  Message loop
   while (TRUE) {
-    DWORD wait_result = MsgWaitForMultipleObjectsEx(0, // no handles
-                        0, // no handles
-                        INFINITE,
-                        QS_ALLINPUT,
-                        MWMO_ALERTABLE | MWMO_INPUTAVAILABLE);
+    DWORD wait_result = MsgWaitForMultipleObjectsEx(
+                          0, // no handles
+                          0, // no handles
+                          INFINITE,
+                          QS_ALLINPUT,
+                          MWMO_ALERTABLE | MWMO_INPUTAVAILABLE);
 
     if (wait_result == WAIT_FAILED) {
-      printf("boom11");
       continue;
     }
 
@@ -114,32 +112,28 @@ cleanup:
 }
 
 void WINAPI handleTeensyMessage(DWORD dwErr, DWORD cbBytesRead, LPOVERLAPPED lpOverLap) {
-  // printf("got teensy msg\n");
+  rawhid_async_recv_complete(0, rawhid_buf, 64);
 
-  int y =
-    rawhid_async_recv_complete(0, rawhid_buf, 64);
-
-
-  printf("%d 0x%02X %02X %02X %02X \n", y, (byte)rawhid_buf[0], (byte) rawhid_buf[1], (byte)rawhid_buf[3], (byte)rawhid_buf[4]);
+  // printf("0x%02X %02X \n", (byte)rawhid_buf[3], (byte)rawhid_buf[4]);
   if (rawhid_buf[3]) {
-    // printf("MM\n");
     PostMessage(targetWindow, WM_KEYDOWN, VK_UP, 0);
     PostMessage(targetWindow, WM_KEYDOWN, VK_RETURN, 0);
   }
 
   if (rawhid_buf[4]) {
-    printf("makeidup\n");
-    // int ok = SetForegroundWindow(targetWindow);
-    FLASHWINFO x = {
-      sizeof(FLASHWINFO),
-      targetWindow,
-      FLASHW_ALL,
-      5,
-      0
-    };
-    int ok = FlashWindowEx(&x);
-    // int ok = BringWindowToTop(targetWindow);
-    if (ok == 0) {
+    // This sometimes work:
+    BOOL ok = SetForegroundWindow(targetWindow);
+    if (!ok) {
+      ok = FlashWindowEx(&(FLASHWINFO) {
+        sizeof(FLASHWINFO),
+               targetWindow,
+               FLASHW_ALL,
+               5, // count of flashes
+               0, // default rate of flash
+      });
+    }
+    // ok = BringWindowToTop(targetWindow);
+    if (!ok) {
       printf("didnt work\n");
     }
     // SwitchToThisWindow (targetWindow, TRUE);
@@ -154,40 +148,37 @@ void showMagic()
   char magic = 10;
   char sendbuff[64];
 
-
   int len = GetWindowText(targetWindow, buff, LEN_BUFF_LONG);
   // printf("Title len = %d\n[%S]\n", len, buff);
 
-
-  TCHAR magicMarker =
-    len > lstrlen(targetTitle) ? buff[len - 1] : 0;
+  TCHAR magicMarker = len > lstrlen(targetTitle) ? buff[len - 1] : 0;
   switch (magicMarker) {
   case 0:
-    printf("Too short");
-    magic = 0;
+    // printf("Too short");
+    magic = 0b000;
     break;
 
   case 9:
-    printf("tab");
-    magic = 2;
+    // printf("tab");
+    magic = 0b100;
     break;
   case 30:
-    printf("Record Seperator");
-    magic = 1;
+    // printf("Record Seperator");
+    magic = 0b001;
     break;
   case 31:
-    printf("Unit Seperator");
-    magic = 4;
+    // printf("Unit Seperator");
+    magic = 0b010;
     break;
 
   default:
     printf("Not enough magic: %d", magicMarker);
-    magic = 7;
+    magic = 0b111;
     break;
   }
   if (magic < 10) {
     sendbuff[0] = magic;
-    printf("\nsending: %d", magic);
+    // printf("\nsending: %d", magic);
     rawhid_send(0, sendbuff, 64, 100);
   }
   printf("\n");

@@ -5,7 +5,7 @@ CFLAGS  = -Wall -Werror -O2
 CFLAGS += -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -DUNICODE -D_UNICODE
 
 # LIBS = -lws2_32  # WinSockets
-LIBS = -lhid -lsetupapi
+LIBS = -lhid -lsetupapi  # USB
 
 # remove -mwindows to have an stdout.
 # LINK_FLAGS = -mwindows
