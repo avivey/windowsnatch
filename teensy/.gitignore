@@ -1,0 +1,7 @@
+*.o
+*.elf
+*.hex
+*.d
+
+# simlink to where the tools are:
+/tools
