@@ -152,10 +152,10 @@ void OnClose(HWND hWnd)
 //  system tray.
 BOOL ShowPopupMenu(HWND hWnd, POINT *curpos, int wDefaultItem)
 {
-  HMENU   hPop        = NULL;
-  int     i           = 0;
-  WORD    cmd;
-  POINT   pt;
+  HMENU hPop;
+  int i = 0;
+  WORD cmd;
+  POINT pt;
 
   if (g_bModalState)
     return FALSE;
@@ -175,11 +175,10 @@ BOOL ShowPopupMenu(HWND hWnd, POINT *curpos, int wDefaultItem)
   SetFocus(hWnd);
 
   SendMessage(hWnd, WM_INITMENUPOPUP, (WPARAM)hPop, 0);
-
+  // TrackPopupMenu blocks until the menu is released
   cmd = TrackPopupMenu(hPop, TPM_LEFTALIGN | TPM_RIGHTBUTTON
                        | TPM_RETURNCMD | TPM_NONOTIFY,
                        curpos->x, curpos->y, 0, hWnd, NULL);
-
   SendMessage(hWnd, WM_COMMAND, cmd, 0);
 
   DestroyMenu(hPop);
@@ -279,8 +278,8 @@ void RegisterApplicationClass(HINSTANCE hInstance)
   wclx.cbWndExtra     = 0;
   wclx.hInstance      = hInstance;
   wclx.hCursor        = LoadCursor(NULL, IDC_ARROW);
-  wclx.hbrBackground  = (HBRUSH)(COLOR_BTNFACE + 1);      //  COLOR_* + 1 is
-  //  special magic.
+  //  COLOR_* + 1 is special magic.
+  wclx.hbrBackground  = (HBRUSH)(COLOR_BTNFACE + 1);
   wclx.lpszMenuName   = NULL;
   wclx.lpszClassName  = THIS_CLASSNAME;
 

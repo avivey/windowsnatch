@@ -203,13 +203,11 @@ BOOL CALLBACK callback(HWND hWnd, LPARAM lParam)
   }
 
   len = GetClassName(hWnd, buff, lstrlen(targetClass) + 1);
-  if (len <= 0  ||
-      lstrcmp(buff, targetClass) != 0) {
+  if (len <= 0  || lstrcmp(buff, targetClass) != 0) {
     return TRUE;
   }
   len = GetWindowText(hWnd, buff, lstrlen(targetTitle) + 1);
-  if (len > 0 &&
-      lstrcmp(buff, targetTitle) == 0) {
+  if (len > 0 && lstrcmp(buff, targetTitle) == 0) {
     targetWindow = hWnd;
     return FALSE;
   }
