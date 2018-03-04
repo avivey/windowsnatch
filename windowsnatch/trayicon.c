@@ -167,6 +167,11 @@ BOOL ShowPopupMenu(HWND hWnd, POINT *curpos, int wDefaultItem)
     curpos = &pt;
   }
 
+  InsertMenu(hPop, i++, MF_BYPOSITION | MF_STRING,
+             ID_BIND_WINDOW_RANDOM, _T("Bind to new Putty"));
+
+  InsertMenu(hPop, i++, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
+
   InsertMenu(hPop, i++, MF_BYPOSITION | MF_STRING, ID_ABOUT, _T("About..."));
   InsertMenu(hPop, i++, MF_BYPOSITION | MF_STRING, ID_EXIT, _T("Exit"));
 
@@ -186,7 +191,6 @@ BOOL ShowPopupMenu(HWND hWnd, POINT *curpos, int wDefaultItem)
   return cmd;
 }
 
-
 BOOL OnCommand(HWND hWnd, WORD wID, HWND hCtl)
 {
   if (g_bModalState)
@@ -205,10 +209,15 @@ BOOL OnCommand(HWND hWnd, WORD wID, HWND hCtl)
     PostMessage(hWnd, WM_CLOSE, 0, 0);
     return 0;
 
-  default:
+  case 0:
     // This happens when the right-click menu is canceled.
     return 0;
   }
+
+  return OnCommand_fallback ?
+         (*OnCommand_fallback)(hWnd, wID, hCtl)
+         : 1;
+
 }
 
 

@@ -20,10 +20,14 @@ enum {
   //  Our commands
   ID_EXIT             = 2000,
   ID_ABOUT,
+
+  ID_RECONNECT_DEVICE = 3000,
+  ID_BIND_WINDOW_RANDOM,
 };
 
 void (*app_close_listener)(HWND);
 LRESULT(*WindowProc_fallback)(HWND, UINT, WPARAM, LPARAM);
+BOOL(*OnCommand_fallback)(HWND hWnd, WORD wID, HWND hCtl);
 
 void RegisterApplicationClass(HINSTANCE hInstance);
 inline void UnregisterApplicationClass(HINSTANCE hInstance) {
