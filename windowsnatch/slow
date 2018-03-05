@@ -1,0 +1,26 @@
+function set-title ()
+{
+    echo -ne "\e]2;$@\007"
+}
+function magic ()
+{
+  set-title "working... $1"
+}
+
+magic '\036'
+echo -ne '[                         ]\rWorking...['
+for i in {1..15}
+do
+  echo -n '#'
+  sleep 0.2
+done
+echo
+
+V=$(tr -dc abc < /dev/urandom | head -c1)
+if [[ $V == c ]]
+then
+  echo -e '   \e[32;1mSuccess!\e[0m'
+  exit 0
+fi
+echo -e '   \e[31;1mFailed!\e[0m'
+exit 1
