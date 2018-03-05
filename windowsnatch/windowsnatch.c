@@ -6,15 +6,20 @@
 #include "trayicon.h"
 #include "usb_hid.h"
 
-#define LEN_BUFF_SHORT (10)
 #define LEN_BUFF_LONG (50)
+#define NUMBER_OF_TARGETS (6)
 
 TCHAR buff[LEN_BUFF_LONG];
 TCHAR *targetClass = TEXT("PuTTY");
 TCHAR *targetTitle = TEXT("target");
 
-HWND targetWindow = NULL;
-HWINEVENTHOOK targetEventHook = 0;
+typedef struct TARGET_WINDOW {
+  HWND windowHandle;
+  HWINEVENTHOOK eventHook;
+} TARGET_WINDOW;
+
+TARGET_WINDOW targets[NUMBER_OF_TARGETS];
+
 BOOL teensyConnected = FALSE;
 
 void findMyPutty(BOOL silent);
@@ -23,7 +28,7 @@ void HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd,
                     DWORD dwEventThread, DWORD dwmsEventTime);
 void WINAPI handleTeensyMessage(DWORD, DWORD, LPOVERLAPPED);
 BOOL TrayiconCommandHandler(HWND, WORD, HWND);
-void ReleaseCurrentPutty();
+void ReleaseTarget(TARGET_WINDOW*);
 
 void DisconnectTeensy();
 BOOL ConnectTeensy(BOOL silent);
@@ -34,22 +39,21 @@ char rawhid_buf[64];
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, LPSTR cmdline, int show)
 {
-  HWND hWnd;
-  MSG msg;
-
   OnCommand_fallback = TrayiconCommandHandler;
+
+  memset(&targets, 0, NUMBER_OF_TARGETS * sizeof(TARGET_WINDOW));
 
   ConnectTeensy(TRUE);
   findMyPutty(TRUE);
 
   RegisterApplicationClass(hInst);
 
-  hWnd = CreateWindow(
-           THIS_CLASSNAME, THIS_TITLE,
-           0, // style.
-           0, 0, 0, 0, // location, size
-           HWND_MESSAGE, // Message-only window.
-           NULL, hInst, NULL);
+  HWND hWnd = CreateWindow(
+                THIS_CLASSNAME, THIS_TITLE,
+                0, // style.
+                0, 0, 0, 0, // location, size
+                HWND_MESSAGE, // Message-only window.
+                NULL, hInst, NULL);
 
   //  Message loop
   while (TRUE) {
@@ -64,6 +68,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, LPSTR cmdline, int show)
       continue;
     }
 
+    MSG msg;
     while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
       if (msg.message == WM_QUIT) {
         goto stop_loop;
@@ -75,7 +80,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, LPSTR cmdline, int show)
   }
 stop_loop:
 
-  ReleaseCurrentPutty();
+  ReleaseTarget(&targets[0]);
   DestroyWindow(hWnd);
   UnregisterApplicationClass(hInst);
 
@@ -102,33 +107,33 @@ BOOL TrayiconCommandHandler(HWND hWnd, WORD commandID, HWND hCtl) {
   return 1;
 }
 
-void sendCommandToPutty(BOOL btn1, BOOL btn2) {
-  if (targetWindow == NULL) {
+void sendCommandToPutty(TARGET_WINDOW *putty, BOOL btn1, BOOL btn2) {
+  if (putty->windowHandle == NULL) {
     return;
   }
 
   if (btn1) {
-    PostMessage(targetWindow, WM_KEYDOWN, VK_UP, 0);
-    PostMessage(targetWindow, WM_KEYDOWN, VK_RETURN, 0);
+    PostMessage(putty->windowHandle, WM_KEYDOWN, VK_UP, 0);
+    PostMessage(putty->windowHandle, WM_KEYDOWN, VK_RETURN, 0);
   }
 
   if (btn2) {
     // This sometimes work:
-    BOOL ok = SetForegroundWindow(targetWindow);
+    BOOL ok = SetForegroundWindow(putty->windowHandle);
     if (!ok) {
       ok = FlashWindowEx(&(FLASHWINFO) {
         sizeof(FLASHWINFO),
-               targetWindow,
+               putty->windowHandle,
                FLASHW_ALL,
                5, // count of flashes
                0, // default rate of flash
       });
     }
-    // ok = BringWindowToTop(targetWindow);
+    // ok = BringWindowToTop(putty->windowHandle);
     if (!ok) {
       printf("didnt work\n");
     }
-    // SwitchToThisWindow (targetWindow, TRUE);
+    // SwitchToThisWindow (putty->windowHandle, TRUE);
   }
 
 }
@@ -146,7 +151,7 @@ void WINAPI handleTeensyMessage(
 
   rawhid_async_recv_complete(0, rawhid_buf, 64);
 
-  sendCommandToPutty(rawhid_buf[3], rawhid_buf[4]);
+  sendCommandToPutty(&targets[0], rawhid_buf[3], rawhid_buf[4]);
 
   // listen to another message
   rawhid_async_recv(0, &handleTeensyMessage);
@@ -203,9 +208,10 @@ void HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd,
 }
 
 
-BOOL CALLBACK find_putty_callback(HWND hWnd, LPARAM lParam)
+BOOL CALLBACK find_putty_callback(HWND hWnd, LPARAM target_index)
 {
-  if (targetWindow != NULL) {
+  TARGET_WINDOW *putty = &targets[target_index];
+  if (putty->windowHandle != NULL) {
     return FALSE;
   }
 
@@ -215,52 +221,55 @@ BOOL CALLBACK find_putty_callback(HWND hWnd, LPARAM lParam)
   }
   len = GetWindowText(hWnd, buff, lstrlen(targetTitle) + 1);
   if (len > 0 && lstrcmp(buff, targetTitle) == 0) {
-    targetWindow = hWnd;
+    putty->windowHandle = hWnd;
     return FALSE;
   }
 
   return TRUE;
 }
 
-void ReleaseCurrentPutty() {
-  if (targetWindow == NULL) {
+void ReleaseTarget(TARGET_WINDOW *target) {
+  if (target->windowHandle == NULL) {
     return;
   }
-  UnhookWinEvent(targetEventHook);
-  targetWindow = NULL;
+  UnhookWinEvent(target->eventHook);
+  target->windowHandle = NULL;
 }
 
 void findMyPutty(BOOL silent) {
-  ReleaseCurrentPutty();
+  // This function still only supports target[0].
+  TARGET_WINDOW *putty = targets;
 
-  EnumWindows(find_putty_callback, 0);
+  ReleaseTarget(putty);
+  int target_id = 0;
+  EnumWindows(find_putty_callback, target_id);
 
-  if (targetWindow == NULL) {
+  if (putty->windowHandle == NULL) {
     if (!silent) ShowError(_T("Error finding target Putty"));
     return;
   }
 
   DWORD hProc = 0;
-  GetWindowThreadProcessId(targetWindow, &hProc);
+  GetWindowThreadProcessId(putty->windowHandle, &hProc);
   if (hProc == 0) {
     if (!silent) ShowError(_T("Found target Putty, it has no process"));
-    targetWindow = NULL;
+    putty->windowHandle = NULL;
     return;
   }
 
-  targetEventHook = SetWinEventHook(
-                      EVENT_OBJECT_NAMECHANGE, EVENT_OBJECT_NAMECHANGE,
-                      NULL, // Handle to DLL.
-                      HandleWinEvent, // The event handler callback.
-                      hProc, 0, // Process and thread IDs of interest (0 = all)
-                      WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
-  if (targetEventHook == 0) {
+  putty->eventHook = SetWinEventHook(
+                       EVENT_OBJECT_NAMECHANGE, EVENT_OBJECT_NAMECHANGE,
+                       NULL, // Handle to DLL.
+                       HandleWinEvent, // The event handler callback.
+                       hProc, 0, // Process and thread IDs of interest (0 = all)
+                       WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+  if (putty->eventHook == 0) {
     if (!silent) ShowError(_T("Failed to SetWinEventHook"));
-    targetWindow = NULL;
+    putty->windowHandle = NULL;
     return;
   }
 
-  showMagic(targetWindow);
+  showMagic(putty->windowHandle);
 }
 
 BOOL ConnectTeensy(BOOL silent) {
@@ -274,7 +283,8 @@ BOOL ConnectTeensy(BOOL silent) {
   teensyConnected = TRUE;
   rawhid_async_recv(0, &handleTeensyMessage);
 
-  if (targetWindow != NULL) showMagic(targetWindow);
+  // TODO showAllMagic()
+  if (targets[0].windowHandle != NULL) showMagic(targets[0].windowHandle);
   return TRUE;
 }
 
