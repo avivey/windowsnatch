@@ -145,7 +145,6 @@ int rawhid_async_recv_complete(int num, void *buf, int len) {
   if (!async_read_in_flight) goto return_error;
   hid = get_hid(num);
 
-
   if (!GetOverlappedResult(hid->handle, &async_overlap, &n, FALSE))
     goto return_error;
   if (n <= 0) return n;
@@ -159,6 +158,17 @@ int rawhid_async_recv_complete(int num, void *buf, int len) {
 return_error:
   print_win32_err();
   return -4;
+}
+
+int rawhid_async_recv_cancel(int num) {
+  if (!async_read_in_flight) goto return_error;
+  hid_t *hid = get_hid(num);
+  async_read_in_flight = FALSE;
+
+  return CancelIo(hid->handle);
+
+return_error:
+  return -3;
 }
 
 //  rawhid_send - send a packet

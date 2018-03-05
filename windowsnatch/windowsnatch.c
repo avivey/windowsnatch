@@ -15,6 +15,7 @@ TCHAR *targetTitle = TEXT("target");
 
 HWND targetWindow = NULL;
 HWINEVENTHOOK targetEventHook = 0;
+BOOL teensyConnected = FALSE;
 
 void findMyPutty(BOOL silent);
 void HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd,
@@ -23,6 +24,10 @@ void HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd,
 void WINAPI handleTeensyMessage(DWORD, DWORD, LPOVERLAPPED);
 BOOL TrayiconCommandHandler(HWND, WORD, HWND);
 void ReleaseCurrentPutty();
+
+void DisconnectTeensy();
+BOOL ConnectTeensy(BOOL silent);
+
 void ShowError(LPCTSTR body);
 
 char rawhid_buf[64];
@@ -31,20 +36,11 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, LPSTR cmdline, int show)
 {
   HWND hWnd;
   MSG msg;
-  int iRetValue = 9;
-
-  int count;
 
   OnCommand_fallback = TrayiconCommandHandler;
 
+  ConnectTeensy(TRUE);
   findMyPutty(TRUE);
-
-  count = rawhid_open(1, 0x16C0, 0x0486, 0xFFAB, 0x0200);
-  if (count <= 0) {
-    printf("no rawhid device found\n");
-    return 4;
-  }
-  rawhid_async_recv(0, &handleTeensyMessage);
 
   RegisterApplicationClass(hInst);
 
@@ -79,13 +75,11 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, LPSTR cmdline, int show)
   }
 stop_loop:
 
-  iRetValue = 0;
-
   ReleaseCurrentPutty();
   DestroyWindow(hWnd);
   UnregisterApplicationClass(hInst);
 
-  return iRetValue;
+  return 0;
 }
 
 // This function is called as a fallback from trayicon.c's OnCommand.
@@ -93,12 +87,18 @@ BOOL TrayiconCommandHandler(HWND hWnd, WORD commandID, HWND hCtl) {
 
   switch (commandID) {
   case ID_RECONNECT_DEVICE:
-    break; // TODO
+    ConnectTeensy(FALSE);
+
+
+    return 0;
+  case ID_DISCONNECT_DEVICE:
+    DisconnectTeensy();
+    return 0;
   case ID_BIND_WINDOW_RANDOM:
     findMyPutty(FALSE);
     return 0;
   }
-
+  printf("menu cmd: %d", commandID);
   return 1;
 }
 
@@ -135,6 +135,14 @@ void sendCommandToPutty(BOOL btn1, BOOL btn2) {
 
 void WINAPI handleTeensyMessage(
   DWORD dwErr, DWORD cbBytesRead, LPOVERLAPPED lpOverLap) {
+
+  if (dwErr == ERROR_OPERATION_ABORTED) {
+    // terminated, disconnect device?
+    printf("error from teensy recv: ERROR_OPERATION_ABORTED\n");
+    return;
+  } else if (dwErr) {
+    printf("error from teensy recv: %ld\n", dwErr);
+  }
 
   rawhid_async_recv_complete(0, rawhid_buf, 64);
 
@@ -173,16 +181,16 @@ void showMagic(HWND puttyWindow)
     break;
 
   default:
-    printf("Not enough magic: %d", magicMarker);
+    // printf("Not enough magic: %d", magicMarker);
     magic = 0b111;
     break;
   }
   if (magic < 10) {
     sendbuff[0] = magic;
     // printf("\nsending: %d", magic);
-    rawhid_send(0, sendbuff, 64, 100);
+    if (teensyConnected)
+      rawhid_send(0, sendbuff, 64, 100);
   }
-  printf("\n");
 }
 
 void HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd,
@@ -197,13 +205,11 @@ void HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd,
 
 BOOL CALLBACK find_putty_callback(HWND hWnd, LPARAM lParam)
 {
-  int len;
-
   if (targetWindow != NULL) {
     return FALSE;
   }
 
-  len = GetClassName(hWnd, buff, lstrlen(targetClass) + 1);
+  int len = GetClassName(hWnd, buff, lstrlen(targetClass) + 1);
   if (len <= 0  || lstrcmp(buff, targetClass) != 0) {
     return TRUE;
   }
@@ -255,6 +261,28 @@ void findMyPutty(BOOL silent) {
   }
 
   showMagic(targetWindow);
+}
+
+BOOL ConnectTeensy(BOOL silent) {
+  DisconnectTeensy();
+
+  int count = rawhid_open(1, 0x16C0, 0x0486, 0xFFAB, 0x0200);
+  if (count <= 0) {
+    if (!silent) ShowError(_T("Teensy device not found"));
+    return FALSE;
+  }
+  teensyConnected = TRUE;
+  rawhid_async_recv(0, &handleTeensyMessage);
+
+  if (targetWindow != NULL) showMagic(targetWindow);
+  return TRUE;
+}
+
+void DisconnectTeensy() {
+  if (!teensyConnected) return;
+  rawhid_async_recv_cancel(0);
+  rawhid_close(0);
+  teensyConnected = FALSE;
 }
 
 void ShowError(LPCTSTR body) {

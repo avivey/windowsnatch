@@ -169,6 +169,10 @@ BOOL ShowPopupMenu(HWND hWnd, POINT *curpos, int wDefaultItem)
 
   InsertMenu(hPop, i++, MF_BYPOSITION | MF_STRING,
              ID_BIND_WINDOW_RANDOM, _T("Bind to new Putty"));
+  InsertMenu(hPop, i++, MF_BYPOSITION | MF_STRING,
+             ID_DISCONNECT_DEVICE, _T("disconnect teensy"));
+  InsertMenu(hPop, i++, MF_BYPOSITION | MF_STRING,
+             ID_RECONNECT_DEVICE, _T("connect teensy"));
 
   InsertMenu(hPop, i++, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
 

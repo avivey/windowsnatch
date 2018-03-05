@@ -6,3 +6,4 @@ void rawhid_close(int num);
 
 void rawhid_async_recv(int num, LPOVERLAPPED_COMPLETION_ROUTINE on_complete);
 int rawhid_async_recv_complete(int num, void *buf, int len);
+int rawhid_async_recv_cancel(int num);
