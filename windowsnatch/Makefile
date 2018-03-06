@@ -13,7 +13,7 @@ LINK_FLAGS += -s  # Strip debug information
 
 default: windowsnatch.exe
 
-windowsnatch.exe: windowsnatch.o trayicon.o usb_hid.o
+windowsnatch.exe: windowsnatch.o trayicon.o usb_hid.o find_window.o
 
 configuration.h icd.h: ../config.py
 	$^

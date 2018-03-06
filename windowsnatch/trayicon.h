@@ -17,6 +17,8 @@ enum {
 
   APPWM_TRAYICON      = WM_APP,
   APPWM_NOP           = WM_APP + 1,
+
+  APPWM_CLICKED_WINDOW,
 };
 
 //  tray commands

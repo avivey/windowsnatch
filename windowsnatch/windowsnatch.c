@@ -1,10 +1,9 @@
-#undef UNICODE
-#define UNICODE
 #include <windows.h>
 #include <stdio.h>
 
 #include "trayicon.h"
 #include "usb_hid.h"
+#include "find_window.h"
 
 #define LEN_BUFF_LONG (50)
 #define NUMBER_OF_TARGETS (6)
@@ -22,12 +21,15 @@ TARGET_WINDOW targets[NUMBER_OF_TARGETS];
 
 BOOL teensyConnected = FALSE;
 
-void findMyPutty(BOOL silent);
+void findMyPutty(int targetId, BOOL silent);
+void installPutty(int targetId, HWND windowHandle, BOOL silent);
+
 void HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd,
                     LONG idObject, LONG idChild,
                     DWORD dwEventThread, DWORD dwmsEventTime);
 void WINAPI handleTeensyMessage(DWORD, DWORD, LPOVERLAPPED);
 BOOL TrayiconCommandHandler(HWND, WORD, HWND);
+LRESULT MessageLoopMessageHandler(HWND, UINT, WPARAM, LPARAM);
 void ReleaseTarget(TARGET_WINDOW*);
 
 void DisconnectTeensy();
@@ -40,11 +42,12 @@ char rawhid_buf[64];
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, LPSTR cmdline, int show)
 {
   OnCommand_fallback = TrayiconCommandHandler;
+  WindowProc_fallback = MessageLoopMessageHandler;
 
   memset(&targets, 0, NUMBER_OF_TARGETS * sizeof(TARGET_WINDOW));
 
   ConnectTeensy(TRUE);
-  findMyPutty(TRUE);
+  findMyPutty(0, TRUE);
 
   RegisterApplicationClass(hInst);
 
@@ -54,7 +57,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, LPSTR cmdline, int show)
                 0, 0, 0, 0, // location, size
                 HWND_MESSAGE, // Message-only window.
                 NULL, hInst, NULL);
-
+  PostMessage(hWnd, WM_COMMAND, ID_SELECT_TARGET_BY_CLICK, 0);// hack remove this;
   //  Message loop
   while (TRUE) {
     DWORD wait_result = MsgWaitForMultipleObjectsEx(
@@ -89,22 +92,41 @@ stop_loop:
 
 // This function is called as a fallback from trayicon.c's OnCommand.
 BOOL TrayiconCommandHandler(HWND hWnd, WORD commandID, HWND hCtl) {
-
   switch (commandID) {
   case ID_RECONNECT_DEVICE:
     ConnectTeensy(FALSE);
-
-
     return 0;
   case ID_DISCONNECT_DEVICE:
     DisconnectTeensy();
     return 0;
   case ID_BIND_WINDOW_RANDOM:
-    findMyPutty(FALSE);
+    findMyPutty(0, FALSE);
     return 0;
   }
   printf("menu cmd: %d", commandID);
   return 1;
+}
+
+LRESULT MessageLoopMessageHandler(
+  HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+
+  switch (uMsg) {
+  case APPWM_CLICKED_WINDOW:
+    printf("Got clicked window \n");
+    HWND targetWindow = (HWND)lParam;
+    int targetId = wParam;
+    int len = GetClassName(targetWindow, buff, 48);
+    if (len <= 0  || lstrcmp(buff, targetClass) != 0) {
+      buff[len] = 0;
+      printf("clicked on Not putty: %S\n", buff);
+    } else {
+      installPutty(targetId, targetWindow, FALSE);
+    }
+    return 0;
+
+  default:
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
+  }
 }
 
 void sendCommandToPutty(TARGET_WINDOW *putty, BOOL btn1, BOOL btn2) {
@@ -207,21 +229,16 @@ void HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd,
   }
 }
 
-
-BOOL CALLBACK find_putty_callback(HWND hWnd, LPARAM target_index)
+HWND enumWindowResult;
+BOOL CALLBACK find_putty_callback(HWND hWnd, LPARAM __)
 {
-  TARGET_WINDOW *putty = &targets[target_index];
-  if (putty->windowHandle != NULL) {
-    return FALSE;
-  }
-
   int len = GetClassName(hWnd, buff, lstrlen(targetClass) + 1);
   if (len <= 0  || lstrcmp(buff, targetClass) != 0) {
     return TRUE;
   }
   len = GetWindowText(hWnd, buff, lstrlen(targetTitle) + 1);
   if (len > 0 && lstrcmp(buff, targetTitle) == 0) {
-    putty->windowHandle = hWnd;
+    enumWindowResult = hWnd;
     return FALSE;
   }
 
@@ -236,19 +253,25 @@ void ReleaseTarget(TARGET_WINDOW *target) {
   target->windowHandle = NULL;
 }
 
-void findMyPutty(BOOL silent) {
-  // This function still only supports target[0].
-  TARGET_WINDOW *putty = targets;
+void findMyPutty(int targetId, BOOL silent) {
+  enumWindowResult = NULL;
 
-  ReleaseTarget(putty);
-  int target_id = 0;
-  EnumWindows(find_putty_callback, target_id);
+  EnumWindows(find_putty_callback, 0);
 
-  if (putty->windowHandle == NULL) {
+  if (enumWindowResult == NULL) {
     if (!silent) ShowError(_T("Error finding target Putty"));
     return;
   }
 
+  installPutty(targetId, enumWindowResult, silent);
+}
+
+void installPutty(int targetId, HWND windowHandle, BOOL silent) {
+  TARGET_WINDOW *putty = &targets[targetId];
+
+  ReleaseTarget(putty);
+
+  putty->windowHandle = windowHandle;
   DWORD hProc = 0;
   GetWindowThreadProcessId(putty->windowHandle, &hProc);
   if (hProc == 0) {
