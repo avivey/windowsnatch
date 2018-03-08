@@ -9,15 +9,33 @@
 #define NUMBER_OF_TARGETS (6)
 
 TCHAR buff[LEN_BUFF_LONG];
-TCHAR *targetClass = TEXT("PuTTY");
-TCHAR *targetTitle = TEXT("target");
+TCHAR *targetClass = _T("PuTTY");
+TCHAR *targetTitle = _T("target");
+
+typedef struct TARGET_CLASS {
+  TCHAR* className;
+} TARGET_CLASS;
 
 typedef struct TARGET_WINDOW {
   HWND windowHandle;
   HWINEVENTHOOK eventHook;
+  TARGET_CLASS* targetClass;
 } TARGET_WINDOW;
 
 TARGET_WINDOW targets[NUMBER_OF_TARGETS];
+TARGET_CLASS PUTTY_TARGET_CLASS = {
+  .className = _T("PuTTY"),
+};
+
+UINT_PTR ID_REBIND_TARGET[] = {
+  // TODO this part needs to be generated
+  ID_REBIND_TARGET_0,
+  ID_REBIND_TARGET_1,
+  ID_REBIND_TARGET_2,
+  ID_REBIND_TARGET_3,
+  ID_REBIND_TARGET_4,
+  ID_REBIND_TARGET_5,
+};
 
 BOOL teensyConnected = FALSE;
 
@@ -57,7 +75,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, LPSTR cmdline, int show)
                 0, 0, 0, 0, // location, size
                 HWND_MESSAGE, // Message-only window.
                 NULL, hInst, NULL);
-  PostMessage(hWnd, WM_COMMAND, ID_SELECT_TARGET_BY_CLICK, 0);// hack remove this;
+
   //  Message loop
   while (TRUE) {
     DWORD wait_result = MsgWaitForMultipleObjectsEx(
@@ -101,6 +119,16 @@ BOOL TrayiconCommandHandler(HWND hWnd, WORD commandID, HWND hCtl) {
     return 0;
   case ID_BIND_WINDOW_RANDOM:
     findMyPutty(0, FALSE);
+    return 0;
+
+  case ID_REBIND_TARGET_0:// TODO this part needs to be generated
+  case ID_REBIND_TARGET_1:
+  case ID_REBIND_TARGET_2:
+  case ID_REBIND_TARGET_3:
+  case ID_REBIND_TARGET_4:
+  case ID_REBIND_TARGET_5:
+    FindWindowByClick(hWnd, APPWM_CLICKED_WINDOW,
+                      commandID - ID_REBIND_TARGET_0);
     return 0;
   }
   printf("menu cmd: %d", commandID);
@@ -272,6 +300,7 @@ void installPutty(int targetId, HWND windowHandle, BOOL silent) {
   ReleaseTarget(putty);
 
   putty->windowHandle = windowHandle;
+  putty->targetClass = &PUTTY_TARGET_CLASS;
   DWORD hProc = 0;
   GetWindowThreadProcessId(putty->windowHandle, &hProc);
   if (hProc == 0) {
@@ -295,6 +324,21 @@ void installPutty(int targetId, HWND windowHandle, BOOL silent) {
   showMagic(putty->windowHandle);
 }
 
+TCHAR *unbound_title = _T("[unbound]");
+void BuildRebindSubmenu(HMENU submenu) {
+  int i;
+
+  for (i = 0; i < NUMBER_OF_TARGETS; i++) {
+    TARGET_WINDOW* target = &targets[i];
+    TCHAR *title = target->windowHandle ?
+                   target->targetClass->className : unbound_title;
+
+    _sntprintf(buff, LEN_BUFF_LONG, _T("%d: %s"), i, title);
+    InsertMenu(submenu, i, MF_BYPOSITION | MF_STRING,
+               ID_REBIND_TARGET[i], buff);
+  }
+}
+
 BOOL ConnectTeensy(BOOL silent) {
   DisconnectTeensy();
 
@@ -306,7 +350,6 @@ BOOL ConnectTeensy(BOOL silent) {
   teensyConnected = TRUE;
   rawhid_async_recv(0, &handleTeensyMessage);
 
-  // TODO showAllMagic()
   if (targets[0].windowHandle != NULL) showMagic(targets[0].windowHandle);
   return TRUE;
 }

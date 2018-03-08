@@ -29,11 +29,20 @@ enum {
   ID_RECONNECT_DEVICE = 3000,
   ID_DISCONNECT_DEVICE,
   ID_BIND_WINDOW_RANDOM,
+
+  ID_REBIND_TARGET_0,
+  ID_REBIND_TARGET_1,
+  ID_REBIND_TARGET_2,
+  ID_REBIND_TARGET_3,
+  ID_REBIND_TARGET_4,
+  ID_REBIND_TARGET_5,
 };
 
 void (*app_close_listener)(HWND);
 LRESULT(*WindowProc_fallback)(HWND, UINT, WPARAM, LPARAM);
 BOOL (*OnCommand_fallback)(HWND hWnd, WORD wID, HWND hCtl);
+// This one is defined in an unrelated file! superhackday!
+void BuildRebindSubmenu(HMENU submenu);
 
 void RegisterApplicationClass(HINSTANCE hInstance);
 inline void UnregisterApplicationClass(HINSTANCE hInstance) {

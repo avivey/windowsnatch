@@ -29,6 +29,8 @@ void    OnClose(HWND hWnd);
 
 static BOOL g_bModalState       = FALSE;
 
+static HMENU hTargetsMenu;
+
 //  Add an icon to the system tray.
 void AddTrayIcon(HWND hWnd, UINT uID, UINT uCallbackMsg, UINT uIcon,
                  LPTSTR pszToolTip)
@@ -102,7 +104,6 @@ static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
   //  our tray icon.  We defined it ourselves.  See AddTrayIcon() for
   //  details of how we told Windows about it.
   case APPWM_TRAYICON:
-    SetForegroundWindow(hWnd);
 
     switch (lParam) {
     case WM_MOUSEMOVE:
@@ -173,6 +174,10 @@ BOOL ShowPopupMenu(HWND hWnd, POINT *curpos, int wDefaultItem)
              ID_DISCONNECT_DEVICE, _T("disconnect teensy"));
   InsertMenu(hPop, i++, MF_BYPOSITION | MF_STRING,
              ID_RECONNECT_DEVICE, _T("connect teensy"));
+
+  hTargetsMenu = CreatePopupMenu();
+  InsertMenu(hPop, i++, MF_BYPOSITION | MF_POPUP,
+             (UINT_PTR)hTargetsMenu, _T("Rebind"));
 
   InsertMenu(hPop, i++, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
 
@@ -277,7 +282,10 @@ void OnTrayIconLBtnDblClick(HWND hWnd)
 
 void OnInitMenuPopup(HWND hWnd, HMENU hPop, UINT uID)
 {
-  //  stub
+  while (GetMenuItemCount(hTargetsMenu) > 0) {
+    DeleteMenu(hTargetsMenu, 0, MF_BYPOSITION);
+  }
+  BuildRebindSubmenu(hTargetsMenu);
 }
 
 void RegisterApplicationClass(HINSTANCE hInstance)
