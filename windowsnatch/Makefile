@@ -1,7 +1,7 @@
 TOOLPATH = x86_64-w64-mingw32-
 CC = $(TOOLPATH)gcc
 
-CFLAGS  = -Wall -Werror -O2
+CFLAGS  = -std=gnu11 -Wall -Werror -O2
 CFLAGS += -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -DUNICODE -D_UNICODE
 
 # LIBS = -lws2_32  # WinSockets
