@@ -145,8 +145,16 @@ def write_to(filename, content):
     with open(root + filename, 'w') as file:
         file.write('\n'.join(content))
 
+def assert_pin_sanity():
+    pins = set()
+    for pinset in CONFIG['pin assignment']:
+        for pin in pinset:
+            assert pin not in pins, 'Pin defined twice: %s' % pin
+            pins.add(pin)
+
 if __name__ == '__main__':
     assert CONFIG['num windows'] == len(CONFIG['pin assignment'])
+    assert_pin_sanity()
 
     config = build_configuration()
     write_to('/windowsnatch/configuration.h', config)
