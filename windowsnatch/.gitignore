@@ -1,6 +1,0 @@
-*.o
-*.exe
-
-# generated files:
-configuration.h
-icd.h

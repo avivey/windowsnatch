@@ -2,6 +2,7 @@
 *.elf
 *.hex
 *.d
+*.exe
 
 # Generated files:
 configuration.h
@@ -10,5 +11,5 @@ button_names.h
 button_setup.h
 button_setup.inc
 
-# simlink to where the tools are:
-/tools
+# simlink to where the Teensy tools are:
+/teensy/tools

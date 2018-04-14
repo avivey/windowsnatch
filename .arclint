@@ -1,0 +1,69 @@
+{
+    "exclude": [
+    ],
+    "linters": {
+        "chmod": {
+            "type": "chmod"
+        },
+        "filename": {
+            "type": "filename"
+        },
+        "generated": {
+            "type": "generated"
+        },
+        "json": {
+            "include": [
+                "(^\\.arcconfig$)",
+                "(^\\.arclint$)",
+                "(\\.json$)"
+            ],
+            "type": "json"
+        },
+        "merge-conflict": {
+            "type": "merge-conflict"
+        },
+        "nolint": {
+            "type": "nolint"
+        },
+        "phutil-library": {
+            "include": "(\\.php$)",
+            "type": "phutil-library"
+        },
+        "python pep8": {
+            "include": [
+                "(\\.py$)"
+            ],
+            "severity": {
+                "E301": "disabled",
+                "E302": "disabled",
+                "E303": "disabled",
+                "E305": "disabled",
+                "E501": "disabled",
+                "E711": "warning",
+                "E712": "warning"
+            },
+            "type": "flake8"
+        },
+        "spelling": {
+            "exclude": [
+                "(^.spellcheck)"
+            ],
+            "type": "spelling"
+        },
+        "text": {
+            "exclude": [
+              "(Makefile$)"
+            ],
+            "type": "text"
+        },
+        "makefiles": {
+            "include": [
+              "(Makefile$)"
+            ],
+            "severity": {
+                "2": "disabled"
+            },
+            "type": "text"
+        }
+    }
+}
