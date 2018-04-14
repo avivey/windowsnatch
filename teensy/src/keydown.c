@@ -21,7 +21,7 @@ int __is_keydown(int pin, button_mask_t mask) {
   }
   if (last && !is_pressed) {
     // Key up event
-    button_buffer &= (!mask);  // Clear flag
+    button_buffer &= (~mask);  // Clear flag
     return FALSE;
   }
   if (is_pressed && !last) {
