@@ -35,8 +35,8 @@ int main(void)
       aviv_debug_number(n);
     }
 
-    int keydown1 = is_keydown(BUTTON1);
-    int keydown2 = is_keydown(BUTTON2);
+    int keydown1 = is_keydown(BUTTON11);
+    int keydown2 = is_keydown(BUTTON12);
 
     if (keydown1 || keydown2) {
       // first 2 bytes are a signature
@@ -58,7 +58,7 @@ int main(void)
       } else {
         // Serial.println(F("Unable to transmit packet"));
         digitalWriteFast(YELLOW, HIGH);
-       // analogWrite(YELLOW, 80);
+        // analogWrite(YELLOW, 80);
       }
     }
 

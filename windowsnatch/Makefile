@@ -15,6 +15,9 @@ default: windowsnatch.exe
 
 windowsnatch.exe: windowsnatch.o trayicon.o usb_hid.o
 
+configuration.h icd.h: ../config.py
+	$^
+
 %.exe: %.o
 	$(CC) $(LINK_FLAGS) -o $@ $^ $(LIBS)
 

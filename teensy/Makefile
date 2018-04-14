@@ -129,14 +129,14 @@ build: $(TARGET).elf
 
 hex: $(TARGET).hex
 
-upload_to_board: $(TARGET).hex
-	@$(abspath $(TOOLSPATH))/teensy_post_compile \
-    -file="$(basename $<)" -path=$(CURDIR) -tools="$(abspath $(TOOLSPATH))"
+src/configuration.h src/button_names.h src/icd.h \
+src/button_setup.h src/button_setup.inc: ../config.py
+	$^
 
-reboot:
-	@-$(abspath $(TOOLSPATH))/teensy_reboot
+src/keydown.o: src/button_setup.h src/button_setup.inc
 
-upload: upload_to_board reboot
+style:
+	astyle -n -s2 -q -pUH src/*.c src/*.h
 
 $(BUILDDIR)/%.o: %.c
 	@echo "[CC]\t$<"
@@ -167,3 +167,5 @@ $(TARGET).elf: $(OBJS) $(LDSCRIPT)
 
 clean:
 	rm -rf "$(BUILDDIR)" "$(TARGET).elf" "$(TARGET).hex"
+	rm -f src/configuration.h src/button_names.h src/icd.h	\
+	      src/button_setup.h src/button_setup.inc
