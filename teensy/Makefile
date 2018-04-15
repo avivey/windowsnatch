@@ -23,15 +23,6 @@ BUILDDIR = $(abspath $(CURDIR)/build)
 # path location for Teensy Loader, teensy_post_compile and teensy_reboot
 TOOLSPATH = $(CURDIR)/tools
 
-ifeq ($(OS),Windows_NT)
-    $(error What is Win Dose?)
-else
-    UNAME_S := $(shell uname -s)
-    ifeq ($(UNAME_S),Darwin)
-        TOOLSPATH = /Applications/Arduino.app/Contents/Java/hardware/tools/
-    endif
-endif
-
 # path location for Teensy 3 core
 COREPATH = teensy-core
 
@@ -130,13 +121,15 @@ build: $(TARGET).elf
 hex: $(TARGET).hex
 
 src/configuration.h src/button_names.h src/icd.h \
-src/button_setup.h src/button_setup.inc: ../config.py
-	$^
+src/button_setup.h src/button_setup.inc src/toolsets_init.inc: ../config.py
+	$<
 
-src/keydown.o: src/button_setup.h src/button_setup.inc
+src/keydown.h: src/button_names.h
+src/toolset.c: src/keydown.h src/toolsets_init.inc
+src/keydown.c: src/keydown.h src/button_setup.inc
 
 style:
-	astyle -n -s2 -q -pUH src/*.c src/*.h
+	astyle -n -s2 -q -pUH src/*.c src/*.h src/*.inc
 
 $(BUILDDIR)/%.o: %.c
 	@echo "[CC]\t$<"
@@ -166,6 +159,6 @@ $(TARGET).elf: $(OBJS) $(LDSCRIPT)
 -include $(OBJS:.o=.d)
 
 clean:
-	rm -rf "$(BUILDDIR)" "$(TARGET).elf" "$(TARGET).hex"
-	rm -f src/configuration.h src/button_names.h src/icd.h	\
-	      src/button_setup.h src/button_setup.inc
+	rm -rf "$(BUILDDIR)" *.elf "$(TARGET).hex"  \
+				src/configuration.h src/button_names.h src/icd.h  \
+				src/button_setup.h src/button_setup.inc
