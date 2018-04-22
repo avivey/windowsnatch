@@ -28,7 +28,6 @@ def get_git_version():
 
 CONFIG = {
     'version': get_git_version(),
-    'num windows': 6,
     'pin assignment': [
        PinAssignment(0, 1, 2, 3, 4),
        PinAssignment(5, 6, 7, 8, 9),
@@ -68,7 +67,7 @@ def build_configuration():
         '#define CODE_VERSION_STR "%s"' % CONFIG['version'],
         '#define CODE_VERSION_LEN %s' % len(CONFIG['version']),
 
-        # '#define NUM_TOOLSETS %d' % CONFIG['num windows'],
+        # '#define NUM_TOOLSETS %d' % len(CONFIG['pin assignment']),
 
         '#endif // WINDOWSNATCH_CONFIG_H',
     ]
@@ -115,7 +114,7 @@ def build_keydown_config():
     incl.extend(init)
     incl.append('}')
 
-    button_count = CONFIG['num windows'] * 2
+    button_count = len(CONFIG['pin assignment']) * 2
     if button_count <= 8:
         incl.append('typedef uint_fast8_t button_mask_t;')
     elif button_count <= 16:
@@ -137,7 +136,7 @@ def build_init_toolsets():
     o = list()
     i = 0
 
-    sets_count = CONFIG['num windows']
+    sets_count = len(CONFIG['pin assignment'])
 
     o.append('toolset_t toolset_all_toolsets[%d] = {' % sets_count)
     for set in CONFIG['pin assignment']:
@@ -165,7 +164,6 @@ def assert_pin_sanity():
             pins.add(pin)
 
 if __name__ == '__main__':
-    assert CONFIG['num windows'] == len(CONFIG['pin assignment'])
     assert_pin_sanity()
 
     config = build_configuration()

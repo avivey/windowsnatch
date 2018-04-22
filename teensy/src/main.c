@@ -5,30 +5,50 @@
 #include "toolset.h"
 
 #define YELLOW 13
-#define RED 3
-#define GREEN 4
-#define BLUE 5
 
 void aviv_debug_number(uint8_t number);
 
+void counter(toolset_t* toolset, void* vn) {
+  if (toolset->id != 0) return;
 
-int main(void)
-{
-  int n;
-// RawHID packets are always 64 bytes
-  byte buffer[64];
-  unsigned int packetCount = 0;
+  int n = *(int*)vn;
 
+  if (is_keydown(toolset->button1)) {
+    n += 1;
+  }
+  if (is_keydown(toolset->button2)) {
+    n -= 1;
+  }
+
+  n = (n + 8  % n);
+
+  set_led_color(toolset, n);
+
+  *(int*)vn = n;
+}
+
+int main(void) {
   pinMode(YELLOW, OUTPUT);
+  digitalWriteFast(YELLOW, HIGH);
 
   init_all_led_pins();
   init_buttons();
-  aviv_debug_number(7);
 
-  memset(buffer, 0, 64);
+  int n = 5;
 
   while (1) {
-    n = usb_rawhid_recv(buffer, 0); // 0 timeout = do not wait
+    iterate_over_all_toolsets(counter, &n);
+    delay(10);
+  }
+}
+
+int previous_main(void) {
+// RawHID packets are always 64 bytes
+  byte buffer[64];
+  memset(buffer, 0, 64);
+  unsigned int packetCount = 0;
+  while (1) {
+    int n = usb_rawhid_recv(buffer, 0); // 0 timeout = do not wait
     if (n > 0) {
       // the computer sent a message.
       n = buffer[0] & 0b111;
