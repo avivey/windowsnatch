@@ -8,7 +8,6 @@
 configuration.h
 # icd.h
 button_names.h
-button_setup.h
 button_setup.inc
 
 # simlink to where the Teensy tools are:

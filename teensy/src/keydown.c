@@ -1,9 +1,8 @@
+#include <stdint.h>
+
 #include "keydown.h"
 #include "WProgram.h"
 
-#include "button_setup.h"
-
-int __is_keydown(int pin, button_mask_t mask);
 #include "button_setup.inc"
 
 static button_mask_t button_buffer = 0;

@@ -120,8 +120,8 @@ build: $(TARGET).elf
 
 hex: $(TARGET).hex
 
-src/configuration.h src/button_names.h src/icd.h \
-src/button_setup.h src/button_setup.inc src/toolsets_init.inc: ../config.py
+src/configuration.h src/button_names.h \
+src/button_setup.inc src/toolsets_init.inc: ../config.py
 	$<
 
 src/keydown.h: src/button_names.h
