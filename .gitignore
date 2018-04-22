@@ -9,6 +9,7 @@ configuration.h
 # icd.h
 button_names.h
 button_setup.inc
+toolsets_init.inc
 
 # simlink to where the Teensy tools are:
 /teensy/tools

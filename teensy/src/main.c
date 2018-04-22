@@ -2,6 +2,7 @@
 #include "usb_rawhid.h"
 
 #include "keydown.h"
+#include "toolset.h"
 
 #define YELLOW 13
 #define RED 3
@@ -19,9 +20,8 @@ int main(void)
   unsigned int packetCount = 0;
 
   pinMode(YELLOW, OUTPUT);
-  pinMode(RED, OUTPUT);
-  pinMode(GREEN, OUTPUT);
-  pinMode(BLUE, OUTPUT);
+
+  init_all_led_pins();
   init_buttons();
   aviv_debug_number(7);
 
@@ -67,13 +67,6 @@ int main(void)
 }
 
 void aviv_debug_number(uint8_t number) {
-  int r, g, b;
   if (number > 7) number = 7;
-  r = (number & 0b100) ? HIGH : LOW;
-  g = (number & 0b010) ? HIGH : LOW;
-  b = (number & 0b001) ? HIGH : LOW;
-
-  digitalWriteFast(RED, r);
-  digitalWriteFast(GREEN, g);
-  digitalWriteFast(BLUE, b);
+  set_led_color(get_toolset(0), number);
 }

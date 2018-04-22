@@ -68,6 +68,8 @@ def build_configuration():
         '#define CODE_VERSION_STR "%s"' % CONFIG['version'],
         '#define CODE_VERSION_LEN %s' % len(CONFIG['version']),
 
+        # '#define NUM_TOOLSETS %d' % CONFIG['num windows'],
+
         '#endif // WINDOWSNATCH_CONFIG_H',
     ]
     return conf
@@ -113,7 +115,6 @@ def build_keydown_config():
     incl.extend(init)
     incl.append('}')
 
-
     button_count = CONFIG['num windows'] * 2
     if button_count <= 8:
         incl.append('typedef uint_fast8_t button_mask_t;')
@@ -131,6 +132,23 @@ def build_keydown_config():
     incl.append('}')
 
     return names, incl
+
+def build_init_toolsets():
+    o = list()
+    i = 0
+
+    sets_count = CONFIG['num windows']
+
+    o.append('toolset_t toolset_all_toolsets[%d] = {' % sets_count)
+    for set in CONFIG['pin assignment']:
+        o.append('{%d, %d, %d, %d, %s, %s},' % (
+            i, set.red, set.green, set.blue, set.button1, set.button2))
+        i += 1
+    o.append('};')
+
+    o.append('const int NUM_TOOLSETS = %d;' % sets_count)
+
+    return o
 
 root = path.dirname(__file__)
 def write_to(filename, content):
@@ -160,6 +178,8 @@ if __name__ == '__main__':
     write_to('/teensy/src/button_names.h', names)
     write_to('/teensy/src/button_setup.inc', incl)
 
+    toolsets = build_init_toolsets()
+    write_to('/teensy/src/toolsets_init.inc', toolsets)
 
 
 '''
