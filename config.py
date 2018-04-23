@@ -67,7 +67,7 @@ def build_configuration():
         '#define CODE_VERSION_STR "%s"' % CONFIG['version'],
         '#define CODE_VERSION_LEN %s' % len(CONFIG['version']),
 
-        # '#define NUM_TOOLSETS %d' % len(CONFIG['pin assignment']),
+        '#define NUMBER_OF_TARGETS %d' % len(CONFIG['pin assignment']),
 
         '#endif // WINDOWSNATCH_CONFIG_H',
     ]

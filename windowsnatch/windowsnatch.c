@@ -1,12 +1,13 @@
 #include <windows.h>
 #include <stdio.h>
 
+#include "configuration.h"
+
 #include "trayicon.h"
 #include "usb_hid.h"
 #include "find_window.h"
 
 #define LEN_BUFF_LONG (50)
-#define NUMBER_OF_TARGETS (6)
 
 TCHAR buff[LEN_BUFF_LONG];
 TCHAR *targetClass = _T("PuTTY");
@@ -25,16 +26,6 @@ typedef struct TARGET_WINDOW {
 TARGET_WINDOW targets[NUMBER_OF_TARGETS];
 TARGET_CLASS PUTTY_TARGET_CLASS = {
   .className = _T("PuTTY"),
-};
-
-UINT_PTR ID_REBIND_TARGET[] = {
-  // TODO this part needs to be generated
-  ID_REBIND_TARGET_0,
-  ID_REBIND_TARGET_1,
-  ID_REBIND_TARGET_2,
-  ID_REBIND_TARGET_3,
-  ID_REBIND_TARGET_4,
-  ID_REBIND_TARGET_5,
 };
 
 BOOL teensyConnected = FALSE;
@@ -110,6 +101,12 @@ stop_loop:
 
 // This function is called as a fallback from trayicon.c's OnCommand.
 BOOL TrayiconCommandHandler(HWND hWnd, WORD commandID, HWND hCtl) {
+  if (IsRebindCommand(commandID)) {
+    FindWindowByClick(hWnd, APPWM_CLICKED_WINDOW,
+                      commandID - ID_REBIND_TARGET_0);
+    return 0;
+  }
+
   switch (commandID) {
   case ID_RECONNECT_DEVICE:
     ConnectTeensy(FALSE);
@@ -119,16 +116,6 @@ BOOL TrayiconCommandHandler(HWND hWnd, WORD commandID, HWND hCtl) {
     return 0;
   case ID_BIND_WINDOW_RANDOM:
     findMyPutty(0, FALSE);
-    return 0;
-
-  case ID_REBIND_TARGET_0:// TODO this part needs to be generated
-  case ID_REBIND_TARGET_1:
-  case ID_REBIND_TARGET_2:
-  case ID_REBIND_TARGET_3:
-  case ID_REBIND_TARGET_4:
-  case ID_REBIND_TARGET_5:
-    FindWindowByClick(hWnd, APPWM_CLICKED_WINDOW,
-                      commandID - ID_REBIND_TARGET_0);
     return 0;
   }
   printf("menu cmd: %d", commandID);
@@ -335,7 +322,7 @@ void BuildRebindSubmenu(HMENU submenu) {
 
     _sntprintf(buff, LEN_BUFF_LONG, _T("%d: %s"), i, title);
     InsertMenu(submenu, i, MF_BYPOSITION | MF_STRING,
-               ID_REBIND_TARGET[i], buff);
+               ID_REBIND_TARGET_0 + i, buff);
   }
 }
 

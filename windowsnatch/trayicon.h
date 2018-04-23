@@ -4,6 +4,8 @@
 #include <tchar.h>
 #include <windows.h>
 
+#include "configuration.h"
+
 #define HELP_ABOUT _T("Extract status from the ether.")
 
 // TODO these definitions are used in other contexts too; Cleanup.
@@ -30,13 +32,13 @@ enum {
   ID_DISCONNECT_DEVICE,
   ID_BIND_WINDOW_RANDOM,
 
-  ID_REBIND_TARGET_0,
-  ID_REBIND_TARGET_1,
-  ID_REBIND_TARGET_2,
-  ID_REBIND_TARGET_3,
-  ID_REBIND_TARGET_4,
-  ID_REBIND_TARGET_5,
+  ID_REBIND_TARGET_0 = 3100,
+  ID_REBIND_TARGET_END = ID_REBIND_TARGET_0 + NUMBER_OF_TARGETS,
 };
+
+inline BOOL IsRebindCommand(WORD cmd) {
+  return cmd >= ID_REBIND_TARGET_0 && cmd <= ID_REBIND_TARGET_END;
+}
 
 void (*app_close_listener)(HWND);
 LRESULT(*WindowProc_fallback)(HWND, UINT, WPARAM, LPARAM);

@@ -309,8 +309,5 @@ void RegisterApplicationClass(HINSTANCE hInstance)
 
 HICON LoadSmallIcon(HINSTANCE hInstance, UINT uID)
 {
-  return LoadImage(hInstance, MAKEINTRESOURCE(uID), IMAGE_ICON,
-                   16, 16, 0);
+  return LoadImage(hInstance, MAKEINTRESOURCE(uID), IMAGE_ICON, 16, 16, 0);
 }
-
-
