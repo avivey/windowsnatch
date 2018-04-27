@@ -129,7 +129,7 @@ src/toolset.c: src/keydown.h src/toolsets_init.inc
 src/keydown.c: src/keydown.h src/button_setup.inc
 
 style:
-	astyle -n -s2 -q -pUH src/*.c src/*.h src/*.inc
+	astyle -n -s2 -q -pUH src/*.c src/*.h src/*.inc t/*.c t/*.c t/stubs/*.h
 
 $(BUILDDIR)/%.o: %.c
 	@echo "[CC]\t$<"
@@ -157,6 +157,9 @@ $(TARGET).elf: $(OBJS) $(LDSCRIPT)
 
 # compiler generated dependency info
 -include $(OBJS:.o=.d)
+
+test:
+	make -C t
 
 clean:
 	rm -rf "$(BUILDDIR)" *.elf "$(TARGET).hex"  \

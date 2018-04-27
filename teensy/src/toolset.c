@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "WProgram.h"
 
 #include "toolset.h"

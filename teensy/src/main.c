@@ -8,10 +8,10 @@
 
 void aviv_debug_number(uint8_t number);
 
-void counter(toolset_t* toolset, void* vn) {
-  if (toolset->id != 0) return;
+int counts[] = {2, 3, 4, 5, 6, 7};
 
-  int n = *(int*)vn;
+void counter(toolset_t* toolset, void* __) {
+  int n = counts[toolset->id];
 
   if (is_keydown(toolset->button1)) {
     n += 1;
@@ -20,11 +20,11 @@ void counter(toolset_t* toolset, void* vn) {
     n -= 1;
   }
 
-  n = (n + 8  % n);
+  n = (n + 8  % 8);
 
   set_led_color(toolset, n);
 
-  *(int*)vn = n;
+  counts[toolset->id] = n;
 }
 
 int main(void) {
@@ -34,10 +34,8 @@ int main(void) {
   init_all_led_pins();
   init_buttons();
 
-  int n = 5;
-
   while (1) {
-    iterate_over_all_toolsets(counter, &n);
+    iterate_over_all_toolsets(counter, NULL);
     delay(10);
   }
 }
