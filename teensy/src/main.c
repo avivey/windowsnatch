@@ -35,6 +35,10 @@ int main(void) {
   init_buttons();
 
   while (1) {
+    if (is_keydown(BUTTON62)) {
+      _reboot_Teensyduino_();
+    }
+
     iterate_over_all_toolsets(counter, NULL);
     delay(10);
   }
