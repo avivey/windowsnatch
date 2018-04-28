@@ -29,5 +29,4 @@ Bibliography
 
 Todo
 ====
-- The makefile just takes all the core and libs and links them in the elf/hex -
-  that's redundant. Figure out a way to minimize size of build.
+- Take `utils/optimize.py` and make it more general-case useful.

@@ -111,7 +111,15 @@ INO_FILES := $(wildcard src/*.ino)
 # include paths for libraries
 L_INC := $(foreach lib,$(filter %/, $(wildcard $(LIBRARYPATH)/*/)), -I$(lib))
 
-SOURCES := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o) $(INO_FILES:.ino=.o) $(TC_FILES:.c=.o) $(TCPP_FILES:.cpp=.o) $(LC_FILES:.c=.o) $(LCPP_FILES:.cpp=.o)
+NEEDED_CORE_FILES = EventResponder.o pins_teensy.o yield.o \
+	HardwareSerial1.o HardwareSerial2.o HardwareSerial3.o HardwareSerial4.o \
+	HardwareSerial5.o HardwareSerial6.o analog.o mk20dx128.o nonstd.o \
+	serial1.o serial2.o serial3.o serial4.o serial5.o serial6_lpuart.o \
+	usb_desc.o usb_dev.o usb_inst.o usb_mem.o usb_rawhid.o usb_seremu.o
+NEEDED_CORE_FILES := $(foreach file,$(NEEDED_CORE_FILES), $(COREPATH)/$(file))
+
+SOURCES := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o) $(INO_FILES:.ino=.o) \
+	$(NEEDED_CORE_FILES)
 OBJS := $(foreach src,$(SOURCES), $(BUILDDIR)/$(src))
 
 default: hex
