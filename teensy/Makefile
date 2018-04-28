@@ -104,7 +104,7 @@ LC_FILES := $(wildcard $(LIBRARYPATH)/*/*.c)
 LCPP_FILES := $(wildcard $(LIBRARYPATH)/*/*.cpp)
 TC_FILES := $(wildcard $(COREPATH)/*.c)
 TCPP_FILES := $(wildcard $(COREPATH)/*.cpp)
-C_FILES := $(wildcard src/*.c)
+C_FILES := $(wildcard src/*.c) $(wildcard src/common/*.c)
 CPP_FILES := $(wildcard src/*.cpp)
 INO_FILES := $(wildcard src/*.ino)
 
@@ -128,8 +128,8 @@ build: $(TARGET).elf
 
 hex: $(TARGET).hex
 
-src/configuration.h src/button_names.h \
-src/button_setup.inc src/toolsets_init.inc: ../config.py
+src/common/configuration.h src/common/icd_messages.h src/common/icd_dispatch.c \
+src/button_names.h src/button_setup.inc src/toolsets_init.inc: ../config.py
 	$<
 
 src/keydown.h: src/button_names.h

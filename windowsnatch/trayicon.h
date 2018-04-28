@@ -4,7 +4,7 @@
 #include <tchar.h>
 #include <windows.h>
 
-#include "configuration.h"
+#include "common/configuration.h"
 
 #define HELP_ABOUT _T("Extract status from the ether.")
 

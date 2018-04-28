@@ -9,7 +9,10 @@ CFLAGS = -Wall $(OPTIONS) -DF_CPU=$(TEENSY_CORE_SPEED) -Istubs
 runtest: test
 	./test
 
-test: test.c ../src/toolset.c
+TEST_FILES  = test.c ../src/toolset.c
+TEST_FILES += test_handle_message.c  ../src/handle_messages.c
+TEST_FILES += ../src/common/icd.c
+test: $(TEST_FILES)
 	$(CC) $(CFLAGS) -o "$@" $^
 
 clean:

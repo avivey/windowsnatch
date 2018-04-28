@@ -28,6 +28,8 @@ toolset_t* get_toolset(int index) {
 }
 
 void set_led_color(toolset_t* toolset, unsigned char color) {
+  if (toolset == NULL) return;
+
   int r = (color & 0b100) ? HIGH : LOW;
   int g = (color & 0b010) ? HIGH : LOW;
   int b = (color & 0b001) ? HIGH : LOW;

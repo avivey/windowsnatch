@@ -1,27 +1,22 @@
 #include <windows.h>
 #include <stdio.h>
+#include <tchar.h>
 
-#include "configuration.h"
+#include "common/configuration.h"
 
 #include "trayicon.h"
 #include "usb_hid.h"
 #include "find_window.h"
+#include "windowsnatch.h"
+#include "common/icd.h"
+#include "common/icd_messages.h"
 
-#define LEN_BUFF_LONG (50)
+#define LEN_BUFF_LONG (256)
 
 TCHAR buff[LEN_BUFF_LONG];
 TCHAR *targetClass = _T("PuTTY");
 TCHAR *targetTitle = _T("target");
 
-typedef struct TARGET_CLASS {
-  TCHAR* className;
-} TARGET_CLASS;
-
-typedef struct TARGET_WINDOW {
-  HWND windowHandle;
-  HWINEVENTHOOK eventHook;
-  TARGET_CLASS* targetClass;
-} TARGET_WINDOW;
 
 TARGET_WINDOW targets[NUMBER_OF_TARGETS];
 TARGET_CLASS PUTTY_TARGET_CLASS = {
@@ -46,14 +41,17 @@ BOOL ConnectTeensy(BOOL silent);
 
 void ShowError(LPCTSTR body);
 
-char rawhid_buf[64];
+unsigned char rawhid_buf[64];
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, LPSTR cmdline, int show)
 {
   OnCommand_fallback = TrayiconCommandHandler;
   WindowProc_fallback = MessageLoopMessageHandler;
 
-  memset(&targets, 0, NUMBER_OF_TARGETS * sizeof(TARGET_WINDOW));
+  for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+    targets[i].targetId = i;
+    targets[i].windowHandle = NULL;
+  }
 
   ConnectTeensy(TRUE);
   findMyPutty(0, TRUE);
@@ -144,8 +142,9 @@ LRESULT MessageLoopMessageHandler(
   }
 }
 
-void sendCommandToPutty(TARGET_WINDOW *putty, BOOL btn1, BOOL btn2) {
+void SendCommandToPutty(TARGET_WINDOW *putty, BOOL btn1, BOOL btn2) {
   if (putty->windowHandle == NULL) {
+    printf("putty null");
     return;
   }
 
@@ -185,20 +184,23 @@ void WINAPI handleTeensyMessage(
   } else if (dwErr) {
     printf("error from teensy recv: %ld\n", dwErr);
   }
+  if (cbBytesRead == 0) {
+    return;
+  }
 
   rawhid_async_recv_complete(0, rawhid_buf, 64);
 
-  sendCommandToPutty(&targets[0], rawhid_buf[3], rawhid_buf[4]);
+  dispatch_incoming_message(rawhid_buf);
 
   // listen to another message
   rawhid_async_recv(0, &handleTeensyMessage);
 }
 
-void showMagic(HWND puttyWindow)
-{
+void showMagic(TARGET_WINDOW *target) {
   char magic = 10;
   char sendbuff[64];
 
+  HWND puttyWindow = target->windowHandle;
   int len = GetWindowText(puttyWindow, buff, LEN_BUFF_LONG);
   // printf("Title len = %d\n[%S]\n", len, buff);
 
@@ -206,29 +208,32 @@ void showMagic(HWND puttyWindow)
   switch (magicMarker) {
   case 0:
     // printf("Too short");
-    magic = 0b000;
+    magic = COLOR_BLACK;
     break;
 
   case 9:
     // printf("tab");
-    magic = 0b100;
+    magic = COLOR_RED;
     break;
   case 30:
     // printf("Record Seperator");
-    magic = 0b001;
+    magic = COLOR_BLUE;
     break;
   case 31:
     // printf("Unit Seperator");
-    magic = 0b010;
+    magic = COLOR_GREEN;
     break;
 
   default:
     // printf("Not enough magic: %d", magicMarker);
-    magic = 0b111;
+    magic = COLOR_WHITE;
     break;
   }
   if (magic < 10) {
-    sendbuff[0] = magic;
+    sendbuff[1] = MSG_CODE_SET_LED;
+    sendbuff[2] = 1;
+    sendbuff[3] = target->targetId;
+    sendbuff[4] = magic;
     // printf("\nsending: %d", magic);
     if (teensyConnected)
       rawhid_send(0, sendbuff, 64, 100);
@@ -240,7 +245,8 @@ void HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd,
                     DWORD dwEventThread, DWORD dwmsEventTime)
 {
   if (event == EVENT_OBJECT_NAMECHANGE && idObject == OBJID_WINDOW) {
-    showMagic(hwnd);
+    TARGET_WINDOW *target = GetTargetWindowByWindowHandle(hwnd);
+    showMagic(target);
   }
 }
 
@@ -258,6 +264,24 @@ BOOL CALLBACK find_putty_callback(HWND hWnd, LPARAM __)
   }
 
   return TRUE;
+}
+
+TARGET_WINDOW* GetTargetWindowByWindowHandle(HWND hwnd) {
+  for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+    TARGET_WINDOW* target = &targets[i];
+    if (target->windowHandle == hwnd)
+      return target;
+  }
+  return NULL;
+}
+TARGET_WINDOW* GetTargetWindow(int targetId) {
+  if (targetId >= NUMBER_OF_TARGETS) {
+    return NULL;
+  }
+  return &targets[targetId];
+}
+BOOL IsTargetWindowActive(TARGET_WINDOW *target) {
+  return (target != NULL) && (target->windowHandle != NULL);
 }
 
 void ReleaseTarget(TARGET_WINDOW *target) {
@@ -308,7 +332,7 @@ void installPutty(int targetId, HWND windowHandle, BOOL silent) {
     return;
   }
 
-  showMagic(putty->windowHandle);
+  showMagic(putty);
 }
 
 TCHAR *unbound_title = _T("[unbound]");
@@ -337,7 +361,7 @@ BOOL ConnectTeensy(BOOL silent) {
   teensyConnected = TRUE;
   rawhid_async_recv(0, &handleTeensyMessage);
 
-  if (targets[0].windowHandle != NULL) showMagic(targets[0].windowHandle);
+  if (targets[0].windowHandle != NULL) showMagic(&targets[0]);
   return TRUE;
 }
 
@@ -350,4 +374,9 @@ void DisconnectTeensy() {
 
 void ShowError(LPCTSTR body) {
   MessageBox(NULL, body, NULL, MB_ICONERROR);
+}
+
+void signal_error(int count) {
+  _sntprintf(buff, LEN_BUFF_LONG, _T("Error from below: %d"), count);
+  ShowError(buff);
 }
