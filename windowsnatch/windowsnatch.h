@@ -14,7 +14,7 @@ typedef struct TARGET_WINDOW {
 
 TARGET_WINDOW* GetTargetWindow(int id);
 TARGET_WINDOW* GetTargetWindowByWindowHandle(HWND hwnd);
-
+TARGET_WINDOW* FindEmptyTargetWindow();
 BOOL IsTargetWindowActive(TARGET_WINDOW*);
 
 #endif // WINDOWSNATCH_H

@@ -15,8 +15,6 @@
 
 TCHAR buff[LEN_BUFF_LONG];
 TCHAR *targetClass = _T("PuTTY");
-TCHAR *targetTitle = _T("target");
-
 
 TARGET_WINDOW targets[NUMBER_OF_TARGETS];
 TARGET_CLASS PUTTY_TARGET_CLASS = {
@@ -25,7 +23,7 @@ TARGET_CLASS PUTTY_TARGET_CLASS = {
 
 BOOL teensyConnected = FALSE;
 
-void findMyPutty(int targetId, BOOL silent);
+void AutoBindTargets();
 void installPutty(int targetId, HWND windowHandle, BOOL silent);
 
 void HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd,
@@ -55,7 +53,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, LPSTR cmdline, int show)
   }
 
   ConnectTeensy(TRUE);
-  findMyPutty(0, TRUE);
+  AutoBindTargets();
 
   RegisterApplicationClass(hInst);
 
@@ -113,11 +111,12 @@ BOOL TrayiconCommandHandler(HWND hWnd, WORD commandID, HWND hCtl) {
   case ID_DISCONNECT_DEVICE:
     DisconnectTeensy();
     return 0;
-  case ID_BIND_WINDOW_RANDOM:
-    findMyPutty(0, FALSE);
-    return 0;
   case ID_PROGRAM_DEVICE:
     ReprogramTeensy();
+    return 0;
+
+  case ID_BIND_TARGET_AUTO:
+    AutoBindTargets();
     return 0;
   }
   printf("menu cmd: %d", commandID);
@@ -208,7 +207,7 @@ void showMagic(TARGET_WINDOW *target) {
   int len = GetWindowText(puttyWindow, buff, LEN_BUFF_LONG);
   // printf("Title len = %d\n[%S]\n", len, buff);
 
-  TCHAR magicMarker = len > lstrlen(targetTitle) ? buff[len - 1] : 0;
+  TCHAR magicMarker = buff[len - 1];
   switch (magicMarker) {
   case 0:
     // printf("Too short");
@@ -254,22 +253,6 @@ void HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd,
   }
 }
 
-HWND enumWindowResult;
-BOOL CALLBACK find_putty_callback(HWND hWnd, LPARAM __)
-{
-  int len = GetClassName(hWnd, buff, lstrlen(targetClass) + 1);
-  if (len <= 0  || lstrcmp(buff, targetClass) != 0) {
-    return TRUE;
-  }
-  len = GetWindowText(hWnd, buff, lstrlen(targetTitle) + 1);
-  if (len > 0 && lstrcmp(buff, targetTitle) == 0) {
-    enumWindowResult = hWnd;
-    return FALSE;
-  }
-
-  return TRUE;
-}
-
 TARGET_WINDOW* GetTargetWindowByWindowHandle(HWND hwnd) {
   for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
     TARGET_WINDOW* target = &targets[i];
@@ -287,6 +270,10 @@ TARGET_WINDOW* GetTargetWindow(int targetId) {
 BOOL IsTargetWindowActive(TARGET_WINDOW *target) {
   return (target != NULL) && (target->windowHandle != NULL);
 }
+TARGET_WINDOW* FindEmptyTargetWindow() {
+  return GetTargetWindowByWindowHandle(NULL);
+}
+
 
 void ReleaseTarget(TARGET_WINDOW *target) {
   if (target->windowHandle == NULL) {
@@ -296,17 +283,31 @@ void ReleaseTarget(TARGET_WINDOW *target) {
   target->windowHandle = NULL;
 }
 
-void findMyPutty(int targetId, BOOL silent) {
-  enumWindowResult = NULL;
-
-  EnumWindows(find_putty_callback, 0);
-
-  if (enumWindowResult == NULL) {
-    if (!silent) ShowError(_T("Error finding target Putty"));
-    return;
+BOOL CALLBACK AutoBindPuttyCallback(HWND hWnd, LPARAM __) {
+  TCHAR* className = PUTTY_TARGET_CLASS.className;
+  int len = GetClassName(hWnd, buff, lstrlen(className) + 1);
+  if (len <= 0  || lstrcmp(buff, className) != 0) {
+    return TRUE;
   }
 
-  installPutty(targetId, enumWindowResult, silent);
+  if (GetTargetWindowByWindowHandle(hWnd) != NULL) {
+    // We already have this one
+    return TRUE;
+  }
+
+  TARGET_WINDOW *target = FindEmptyTargetWindow();
+  if (target == NULL) {
+    // Out of room - terminate loop
+    return FALSE;
+  }
+
+  installPutty(target->targetId, hWnd, TRUE);
+
+  return TRUE;
+}
+
+void AutoBindTargets() {
+  EnumWindows(AutoBindPuttyCallback, 0);
 }
 
 void installPutty(int targetId, HWND windowHandle, BOOL silent) {
@@ -365,7 +366,9 @@ BOOL ConnectTeensy(BOOL silent) {
   teensyConnected = TRUE;
   rawhid_async_recv(0, &handleTeensyMessage);
 
-  if (targets[0].windowHandle != NULL) showMagic(&targets[0]);
+  for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
+    showMagic(&targets[i]);
+  }
   return TRUE;
 }
 

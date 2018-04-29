@@ -168,9 +168,6 @@ BOOL ShowPopupMenu(HWND hWnd, POINT *curpos, int wDefaultItem)
     curpos = &pt;
   }
 
-  InsertMenu(hPop, i++, MF_BYPOSITION | MF_STRING,
-             ID_BIND_WINDOW_RANDOM, _T("Bind to new Putty"));
-
   HMENU hDeviceMenu = CreatePopupMenu();
   InsertMenu(hPop, i++, MF_BYPOSITION | MF_POPUP,
              (UINT_PTR)hDeviceMenu, _T("Teensy"));
@@ -188,6 +185,9 @@ BOOL ShowPopupMenu(HWND hWnd, POINT *curpos, int wDefaultItem)
   hTargetsMenu = CreatePopupMenu();
   InsertMenu(hPop, i++, MF_BYPOSITION | MF_POPUP,
              (UINT_PTR)hTargetsMenu, _T("Rebind"));
+
+  InsertMenu(hPop, i++, MF_BYPOSITION | MF_STRING,
+             ID_BIND_TARGET_AUTO, _T("Auto-Bind Putty"));
 
   InsertMenu(hPop, i++, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
 
