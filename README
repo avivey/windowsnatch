@@ -1,0 +1,17 @@
+Windowsnatch: Snatch the error message out of the ether
+
+A hardware utility that makes working with lots of consoles funner.
+Also, a playground for code generation for embedded projects.
+
+Components:
+- teensy: Code for PJRC Teensy 3.6. Raw HID device with a couple of lights and
+  buttons.
+- windowsnatch: Windows side of the system. Talks to the Teensy and to Putty.
+- Linux side: Not yet included; A way for the console to notify the server about
+  status.
+- config.py: Contains configuration and generates code for the other parts.
+
+Building:
+- Using `make` and `gcc` on Linux.
+- See other Readme files for special instructions on obtaining toolchains.
+- Read error messages for other missing toolchains.
