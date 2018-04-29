@@ -38,6 +38,7 @@ void ReleaseTarget(TARGET_WINDOW*);
 
 void DisconnectTeensy();
 BOOL ConnectTeensy(BOOL silent);
+void ReprogramTeensy();
 
 void ShowError(LPCTSTR body);
 
@@ -114,6 +115,9 @@ BOOL TrayiconCommandHandler(HWND hWnd, WORD commandID, HWND hCtl) {
     return 0;
   case ID_BIND_WINDOW_RANDOM:
     findMyPutty(0, FALSE);
+    return 0;
+  case ID_PROGRAM_DEVICE:
+    ReprogramTeensy();
     return 0;
   }
   printf("menu cmd: %d", commandID);
@@ -370,6 +374,18 @@ void DisconnectTeensy() {
   rawhid_async_recv_cancel(0);
   rawhid_close(0);
   teensyConnected = FALSE;
+}
+
+void ReprogramTeensy() {
+  if (!teensyConnected) {
+    ShowError(_T("Teensy not connected"));
+    return;
+  }
+
+  rawhid_buf[0] = ICD_MAGIC_NUMBER;
+  rawhid_buf[1] = MSG_CODE_ENTER_PROGRAMMING_MODE;
+  rawhid_buf[17] = 42;
+  rawhid_send(0, rawhid_buf, 64, 100);
 }
 
 void ShowError(LPCTSTR body) {

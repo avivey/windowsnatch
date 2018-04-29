@@ -170,10 +170,20 @@ BOOL ShowPopupMenu(HWND hWnd, POINT *curpos, int wDefaultItem)
 
   InsertMenu(hPop, i++, MF_BYPOSITION | MF_STRING,
              ID_BIND_WINDOW_RANDOM, _T("Bind to new Putty"));
-  InsertMenu(hPop, i++, MF_BYPOSITION | MF_STRING,
-             ID_DISCONNECT_DEVICE, _T("disconnect teensy"));
-  InsertMenu(hPop, i++, MF_BYPOSITION | MF_STRING,
-             ID_RECONNECT_DEVICE, _T("connect teensy"));
+
+  HMENU hDeviceMenu = CreatePopupMenu();
+  InsertMenu(hPop, i++, MF_BYPOSITION | MF_POPUP,
+             (UINT_PTR)hDeviceMenu, _T("Teensy"));
+
+  InsertMenu(hDeviceMenu, -1, MF_BYPOSITION | MF_STRING,
+             ID_RECONNECT_DEVICE, _T("Connect"));
+  InsertMenu(hDeviceMenu, -1, MF_BYPOSITION | MF_STRING,
+             ID_DISCONNECT_DEVICE, _T("Disconnect"));
+  HMENU hDeviceReset = CreatePopupMenu();
+  InsertMenu(hDeviceMenu, -1, MF_BYPOSITION | MF_POPUP,
+             (UINT_PTR)hDeviceReset, _T("Reprogram"));
+  InsertMenu(hDeviceReset, -1, MF_BYPOSITION | MF_STRING,
+             ID_PROGRAM_DEVICE, _T("Reprogram Teensy"));
 
   hTargetsMenu = CreatePopupMenu();
   InsertMenu(hPop, i++, MF_BYPOSITION | MF_POPUP,
