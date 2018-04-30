@@ -21,6 +21,8 @@ OBJECT_FILES += usb_hid.o common/icd.o common/icd_dispatch.o handle_messages.o
 
 windowsnatch.exe: $(OBJECT_FILES)
 
+.PHONY: common/configuration.h
+
 common/configuration.h common/icd-dispatch.c common/icd_messages.h: ../config.py
 	$<
 

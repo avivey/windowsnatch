@@ -122,11 +122,11 @@ SOURCES := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o) $(INO_FILES:.ino=.o) \
 	$(NEEDED_CORE_FILES)
 OBJS := $(foreach src,$(SOURCES), $(BUILDDIR)/$(src))
 
-default: hex
+hex: $(TARGET).hex
 
 build: $(TARGET).elf
 
-hex: $(TARGET).hex
+.PHONY: src/common/configuration.h
 
 src/common/configuration.h src/common/icd_messages.h src/common/icd_dispatch.c \
 src/button_names.h src/button_setup.inc src/toolsets_init.inc: ../config.py
@@ -171,5 +171,5 @@ test:
 
 clean:
 	rm -rf "$(BUILDDIR)" *.elf "$(TARGET).hex"  \
-				src/configuration.h src/button_names.h src/icd.h  \
-				src/button_setup.h src/button_setup.inc
+				src/button_names.h src/button_setup.h src/toolsets_init.inc	\
+				t/test t/*.o
