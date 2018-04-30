@@ -8,7 +8,8 @@ typedef struct TARGET_CLASS {
 typedef struct TARGET_WINDOW {
   int targetId;
   HWND windowHandle;
-  HWINEVENTHOOK eventHook;
+  HWINEVENTHOOK eventHook1;
+  HWINEVENTHOOK eventHook2;
   TARGET_CLASS* targetClass;
 } TARGET_WINDOW;
 
