@@ -6,6 +6,7 @@
 #include "common/compat.h"
 
 #include "common/icd_messages.h"
+#include "common/configuration.h"
 
 void animate_error(int count);
 
@@ -67,6 +68,20 @@ void set_led_color_operator(toolset_t* toolset, void* pcolor) {
   unsigned char color = *(unsigned char*)pcolor;
   set_led_color(toolset, color);
 }
+
+void transmit_version_info() {
+  Buffer buffer = clean_and_get_buffer();
+  buffer[0] = ICD_MAGIC_NUMBER;
+  buffer[1] = MSG_CODE_VERSION_STRING;
+  strncpy((char*)(buffer + 2), CODE_VERSION_STR, 61);
+  buffer[63] = 0;
+
+  int bytes = usb_rawhid_send(buffer, 200);
+  if (bytes <= 0) {
+    animate_error(3);
+  }
+}
+
 
 void signal_error(int count) {
   animate_error(count);

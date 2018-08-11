@@ -6,8 +6,6 @@
 
 #include "common/configuration.h"
 
-#define HELP_ABOUT _T("Extract status from the ether.")
-
 // TODO these definitions are used in other contexts too; Cleanup.
 #define THIS_CLASSNAME      _T("WindowSnatch")
 #define THIS_TITLE          _T("WindowSnatch")
@@ -46,8 +44,9 @@ inline BOOL IsRebindCommand(WORD cmd) {
 void (*app_close_listener)(HWND);
 LRESULT(*WindowProc_fallback)(HWND, UINT, WPARAM, LPARAM);
 BOOL (*OnCommand_fallback)(HWND hWnd, WORD wID, HWND hCtl);
-// This one is defined in an unrelated file! superhackday!
+// These two are defined in an unrelated file! superhackday!
 void BuildRebindSubmenu(HMENU submenu);
+void ShowAboutMenuModal(HWND);
 
 void RegisterApplicationClass(HINSTANCE hInstance);
 inline void UnregisterApplicationClass(HINSTANCE hInstance) {

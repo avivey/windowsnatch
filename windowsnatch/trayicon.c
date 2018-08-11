@@ -110,6 +110,7 @@ static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
       OnTrayIconMouseMove(hWnd);
       return 0;
 
+    case WM_LBUTTONUP:
     case WM_RBUTTONUP:
       //  There's a long comment in OnTrayIconRBtnUp() which
       //  explains what we're doing here.
@@ -222,8 +223,7 @@ BOOL OnCommand(HWND hWnd, WORD wID, HWND hCtl)
   switch (wID) {
   case ID_ABOUT:
     g_bModalState = TRUE;
-    MessageBox(hWnd, HELP_ABOUT, THIS_TITLE,
-               MB_ICONINFORMATION | MB_OK);
+    ShowAboutMenuModal(hWnd);
     g_bModalState = FALSE;
     return 0;
 

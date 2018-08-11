@@ -40,14 +40,14 @@ CONFIG = {
         'vendor': hex(0x16c0),
         'product': hex(0x0486),
         'usage page': hex(0xFFAB),
-        'usage id': hex(0x0002),        # This encodes protocol version.
+        'usage id': hex(0x0003),        # This encodes protocol version.
     },
     'magic number': hex(0xA2, 1),
     'icd commands': {
         'GET_VERSION': 1,
         'SET_LED': 2,
         'ENTER_PROGRAMMING_MODE': 15,
-        'VERSION_STRING': 16 + 1,
+        'VERSION_STRING': 16 + 0,
         'BUTTON_PRESS': 16 + 2,
     }
 }
@@ -238,5 +238,6 @@ ENTER_PROGRAMMING_MODE:
 - There's no extra data
 
 VERSION_STRING:
-- NULL-terminated ASCII string starting at byte 2.
+- Bytes 2-62: NULL-terminated ASCII string starting at byte 2.
+- Byte 63: Ignored.
 '''

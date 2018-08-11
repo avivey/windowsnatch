@@ -411,6 +411,23 @@ void AutoReconnectTeensy(HWND hwnd, UINT _, UINT_PTR idEvent, DWORD __) {
   ConnectTeensy(TRUE);
 }
 
+#define HELP_ABOUT_TEMPLATE _T( \
+  "Extract status from the ether.\n\n"   \
+  "Client version: %s\n\n" \
+  "Teensy version: %s" )
+
+TCHAR teensy_version[64] = _T("unknown");
+void ShowAboutMenuModal(HWND hWnd) {
+  _sntprintf(buff, LEN_BUFF_LONG,
+             HELP_ABOUT_TEMPLATE, _T(CODE_VERSION_STR), teensy_version);
+  MessageBox(hWnd, buff, THIS_TITLE,
+             MB_ICONINFORMATION | MB_OK);
+}
+
+void HandleTeensyVersionString(LPCTSTR version_string) {
+  wcscpy_s(teensy_version, 64, version_string);
+}
+
 BOOL ConnectTeensy(BOOL silent) {
   DisconnectTeensy();
 
@@ -421,6 +438,11 @@ BOOL ConnectTeensy(BOOL silent) {
   }
   teensyConnected = TRUE;
   rawhid_async_recv(0, &handleTeensyMessage);
+
+  // ask for version
+  rawhid_buf[0] = ICD_MAGIC_NUMBER;
+  rawhid_buf[1] = MSG_CODE_GET_VERSION;
+  rawhid_send(0, rawhid_buf, 64, 100);
 
   for (int i = 0; i < NUMBER_OF_TARGETS; i++) {
     showMagic(&targets[i]);
@@ -433,6 +455,8 @@ void DisconnectTeensy() {
   rawhid_async_recv_cancel(0);
   rawhid_close(0);
   teensyConnected = FALSE;
+
+  wcscpy_s(teensy_version, 64, _T("unknown"));
 }
 
 void ReprogramTeensy() {

@@ -3,9 +3,11 @@
 #include "toolset.h"
 #include "core_pins.h" // for reboot
 
+// TODO move declaration to somewhere
+void transmit_version_info();
+
 void handle_message_GET_VERSION(Buffer buffer) {
-  // TODO implement
-  signal_error(1);
+  transmit_version_info();
 }
 
 void handle_message_SET_LED(Buffer buffer) {

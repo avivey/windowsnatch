@@ -9,9 +9,18 @@
 void signal_error(int count);
 void ShowError(LPCTSTR body);
 void SendCommandToPutty(TARGET_WINDOW *putty, BOOL btn1, BOOL btn2);
+void HandleTeensyVersionString(LPCTSTR version_string);
 
 void handle_message_VERSION_STRING(Buffer buffer) {
-  signal_error(17);
+  TCHAR version[62];
+
+  size_t convertedChars = 0;
+  mbstowcs_s(&convertedChars, version, 62, (char*)(buffer + 2), _TRUNCATE);
+  if (convertedChars == 0) {
+    ShowError(_T("version str not converted"));
+    return;
+  }
+  HandleTeensyVersionString(version);
 }
 
 void handle_message_BUTTON_PRESS(Buffer buffer) {
@@ -41,7 +50,7 @@ void handle_message_BUTTON_PRESS(Buffer buffer) {
 
 
 void handle_message_GET_VERSION(Buffer buffer) {
-  signal_error(101);
+  signal_error(117);
 }
 
 void handle_message_SET_LED(Buffer buffer) {
