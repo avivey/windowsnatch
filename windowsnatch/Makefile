@@ -11,7 +11,7 @@ CFLAGS += -MMD
 LIBS = -lhid -lsetupapi  # USB
 
 # remove -mwindows to have an stdout.
-# LINK_FLAGS = -mwindows
+LINK_FLAGS = -mwindows
 LINK_FLAGS += -s  # Strip debug information
 
 default: windowsnatch.exe
