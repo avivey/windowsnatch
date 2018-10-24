@@ -146,6 +146,25 @@ LRESULT MessageLoopMessageHandler(
   }
 }
 
+void FocusOnWindow(TARGET_WINDOW* target) {
+  // This sometimes work:
+  BOOL ok = SetForegroundWindow(target->windowHandle);
+  if (!ok) {
+    ok = FlashWindowEx(&(FLASHWINFO) {
+      sizeof(FLASHWINFO),
+             target->windowHandle,
+             FLASHW_ALL,
+             5, // count of flashes
+             0, // default rate of flash
+    });
+  }
+  // ok = BringWindowToTop(target->windowHandle);
+  if (!ok) {
+    printf("didnt work\n");
+  }
+  // SwitchToThisWindow (target->windowHandle, TRUE);
+}
+
 void SendCommandToPutty(TARGET_WINDOW *putty, BOOL btn1, BOOL btn2) {
   if (!IsTargetWindowActive(putty)) {
     printf("putty null");
@@ -158,24 +177,8 @@ void SendCommandToPutty(TARGET_WINDOW *putty, BOOL btn1, BOOL btn2) {
   }
 
   if (btn2) {
-    // This sometimes work:
-    BOOL ok = SetForegroundWindow(putty->windowHandle);
-    if (!ok) {
-      ok = FlashWindowEx(&(FLASHWINFO) {
-        sizeof(FLASHWINFO),
-               putty->windowHandle,
-               FLASHW_ALL,
-               5, // count of flashes
-               0, // default rate of flash
-      });
-    }
-    // ok = BringWindowToTop(putty->windowHandle);
-    if (!ok) {
-      printf("didnt work\n");
-    }
-    // SwitchToThisWindow (putty->windowHandle, TRUE);
+    PostMessage(putty->windowHandle, WM_KEYDOWN, VK_CANCEL, 0);
   }
-
 }
 
 void WINAPI handleTeensyMessage(
