@@ -13,6 +13,7 @@ typedef struct TARGET_WINDOW {
   TARGET_CLASS* targetClass;
 } TARGET_WINDOW;
 
+/** returns an active target, or NULL */
 TARGET_WINDOW* GetTargetWindow(int id);
 TARGET_WINDOW* GetTargetWindowByWindowHandle(HWND hwnd);
 TARGET_WINDOW* FindEmptyTargetWindow();

@@ -7,6 +7,7 @@
 #include "trayicon.h"
 #include "usb_hid.h"
 #include "find_window.h"
+#include "relocate_window.h"
 #include "windowsnatch.h"
 #include "common/icd.h"
 #include "common/icd_messages.h"
@@ -37,6 +38,8 @@ void ReleaseTarget(TARGET_WINDOW*);
 void DisconnectTeensy();
 BOOL ConnectTeensy(BOOL silent);
 void ReprogramTeensy();
+
+void RepositionTargetWindows();
 
 void ShowError(LPCTSTR body);
 
@@ -118,6 +121,10 @@ BOOL TrayiconCommandHandler(HWND hWnd, WORD commandID, HWND hCtl) {
 
   case ID_BIND_TARGET_AUTO:
     AutoBindTargets();
+    return 0;
+
+  case ID_REPOSITION_TARGET_WINDOWS:
+    RepositionTargetWindows();
     return 0;
   }
   printf("menu cmd: %d", commandID);
@@ -281,7 +288,11 @@ TARGET_WINDOW* GetTargetWindow(int targetId) {
   if (targetId >= NUMBER_OF_TARGETS) {
     return NULL;
   }
-  return &targets[targetId];
+  TARGET_WINDOW* target = &targets[targetId];
+  if (IsTargetWindowActive(target)) {
+    return target;
+  }
+  return NULL;
 }
 BOOL IsTargetWindowActive(TARGET_WINDOW *target) {
   return (target != NULL) && (target->windowHandle != NULL);
@@ -326,6 +337,10 @@ BOOL CALLBACK AutoBindPuttyCallback(HWND hWnd, LPARAM __) {
 
 void AutoBindTargets() {
   EnumWindows(AutoBindPuttyCallback, 0);
+}
+
+void RepositionTargetWindows() {
+  MagicallyRelocateAllWindows();
 }
 
 void installPutty(int targetId, HWND windowHandle, BOOL silent) {

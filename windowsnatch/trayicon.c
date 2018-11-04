@@ -189,6 +189,9 @@ BOOL ShowPopupMenu(HWND hWnd, POINT *curpos, int wDefaultItem)
   InsertMenu(hPop, i++, MF_BYPOSITION | MF_STRING,
              ID_BIND_TARGET_AUTO, _T("Auto-Bind Putty"));
 
+  InsertMenu(hPop, i++, MF_BYPOSITION | MF_STRING,
+             ID_REPOSITION_TARGET_WINDOWS, _T("Position Windows"));
+
   InsertMenu(hPop, i++, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
 
   InsertMenu(hPop, i++, MF_BYPOSITION | MF_STRING, ID_ABOUT, _T("About..."));

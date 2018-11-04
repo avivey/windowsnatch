@@ -16,7 +16,7 @@ LINK_FLAGS += -s  # Strip debug information
 
 default: windowsnatch.exe
 
-OBJECT_FILES = windowsnatch.o trayicon.o find_window.o
+OBJECT_FILES = windowsnatch.o trayicon.o find_window.o relocate_window.o
 OBJECT_FILES += usb_hid.o common/icd.o common/icd_dispatch.o handle_messages.o
 
 windowsnatch.exe: $(OBJECT_FILES)

@@ -23,7 +23,7 @@ void handle_message_BUTTON_PRESS(Buffer buffer) {
     uint8_t buttonId = buffer[ptr++];
 
     TARGET_WINDOW *target = GetTargetWindow(targetId);
-    if (!IsTargetWindowActive(target)) {
+    if (!target) {
       continue;
     }
 
