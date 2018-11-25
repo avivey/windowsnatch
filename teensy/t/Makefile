@@ -11,7 +11,7 @@ runtest: test
 
 TEST_FILES  = test.c ../src/toolset.c
 TEST_FILES += test_handle_message.c  ../src/handle_messages.c
-TEST_FILES += ../src/common/icd.c
+TEST_FILES += ../src/common/icd.c ../src/common/icd_dispatch.c
 test: $(TEST_FILES)
 	$(CC) $(CFLAGS) -o "$@" $^
 

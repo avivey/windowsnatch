@@ -1,15 +1,16 @@
 #include "test_handle_message.h"
-#include "common/icd_messages.h"
+#include "../src/common/icd_messages.h"
 
 int print_high_pins();
 void clear_all_outpins();
 void _reboot_Teensyduino_() {}
+void signal_error(int _) {}
 
 int test_handle_message() {
   clear_all_outpins();
 
   uint8_t buffer[RAW_HID_BUFFER_SIZE];
-  buffer[1] = MSG_CDOE_SET_LED;
+  buffer[1] = MSG_CODE_SET_LED;
   buffer[2] = 2;  // count of pins
   // Pair 1
   buffer[3] = 5;  // Set 5
