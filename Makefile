@@ -1,6 +1,6 @@
 .PHONY: clean style
 
-default style clean:
+default style clean docker_image:
 	make -C teensy $@
 	make -C windowsnatch $@
 

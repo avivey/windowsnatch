@@ -1,42 +1,40 @@
-TOOLPATH = x86_64-w64-mingw32-
-CC = $(TOOLPATH)gcc
+DOCKER_IMAGE_NAME = aviv-mingw:latest
 
 BUILDDIR = ./build
 
-CFLAGS  = -std=gnu11 -Wall -Werror -O2
-CFLAGS += -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -DUNICODE -D_UNICODE
-CFLAGS += -MMD
+RUN_COMMAND = \
+	docker run --rm -ti \
+		-v $(abspath .):/workdir/src/:ro \
+		-v $(abspath ../common):/workdir/src/common/:ro	\
+		-v $(abspath Makefile.indocker):/workdir/Makefile:ro	\
+		-v $(abspath $(BUILDDIR)):/workdir/$(BUILDDIR) \
 
-# LIBS = -lws2_32  # WinSockets
-LIBS = -lhid -lsetupapi  # USB
+.PHONY: shell docker_image all default generated
 
-# remove -mwindows to have an stdout.
-LINK_FLAGS = -mwindows
-LINK_FLAGS += -s  # Strip debug information
+default all: generated $(BUILDDIR)
+	$(RUN_COMMAND) $(DOCKER_IMAGE_NAME) make TARGET=$(TARGET)
+	cp $(BUILDDIR)/*.exe .
 
-default: windowsnatch.exe
+shell: generated $(BUILDDIR)
+	$(RUN_COMMAND) -ti $(DOCKER_IMAGE_NAME) bash
 
-OBJECT_FILES = windowsnatch.o trayicon.o find_window.o relocate_window.o
-OBJECT_FILES += usb_hid.o common/icd.o common/icd_dispatch.o handle_messages.o
+GENERATED_FILES = common/configuration.h common/icd_dispatch.c \
+	common/icd_messages.h
 
-windowsnatch.exe: $(OBJECT_FILES)
+generated: $(GENERATED_FILES)
 
-.PHONY: common/configuration.h
-
-common/configuration.h common/icd-dispatch.c common/icd_messages.h: ../config.py
+$(GENERATED_FILES): ../config.py
 	$<
 
-trayicon.o windowsnatch.o: common/configuration.h
+$(BUILDDIR):
+	mkdir -p $(BUILDDIR)/common/
 
-%.exe: %.o
-	$(CC) $(LINK_FLAGS) -o $@ $^ $(LIBS)
-
-.PHONY: clean style
+docker_image:
+	# This form means the "context" is not copied over.
+	docker build -t $(DOCKER_IMAGE_NAME) - < Dockerfile
 
 style:
 	astyle -n -s2 -q -pUH *.c *.h common/*.h common/*.c
 
--include *.d
-
 clean:
-	rm -f *.o *.exe *.d common/*.o common/*.d
+	rm -rf *.o *.exe *.d common/*.o common/*.d build/

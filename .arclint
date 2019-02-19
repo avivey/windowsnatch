@@ -52,13 +52,13 @@
         },
         "text": {
             "exclude": [
-              "(Makefile$)"
+              "(Makefile.*)"
             ],
             "type": "text"
         },
         "makefiles": {
             "include": [
-              "(Makefile$)"
+              "(Makefile.*)"
             ],
             "severity": {
                 "2": "disabled"

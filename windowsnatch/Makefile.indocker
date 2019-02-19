@@ -1,0 +1,39 @@
+TOOLPATH = x86_64-w64-mingw32-
+CC = $(TOOLPATH)gcc
+
+BUILDDIR = ./build
+
+CFLAGS  = -std=gnu11 -Wall -Werror -O2
+CFLAGS += -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -DUNICODE -D_UNICODE
+CFLAGS += -MMD
+
+# LIBS = -lws2_32  # WinSockets
+LIBS = -lhid -lsetupapi  # USB
+
+# remove -mwindows to have an stdout.
+LINK_FLAGS = -mwindows
+LINK_FLAGS += -s  # Strip debug information
+
+default: $(BUILDDIR)/windowsnatch.exe
+
+OBJECT_FILES = windowsnatch.o trayicon.o find_window.o relocate_window.o
+OBJECT_FILES += usb_hid.o common/icd.o common/icd_dispatch.o handle_messages.o
+
+OBJECT_FILES_LIST = $(foreach obj,$(OBJECT_FILES), $(BUILDDIR)/$(obj))
+
+$(BUILDDIR)/windowsnatch.exe: $(OBJECT_FILES_LIST)
+
+$(BUILDDIR)/trayicon.o $(BUILDDIR)/windowsnatch.o: common/configuration.h
+
+$(BUILDDIR)/%.o: ./src/%.c
+	$(CC) $(CFLAGS) -o "$@" -c "$<"
+
+%.exe: %.o
+	$(CC) $(LINK_FLAGS) -o $@ $^ $(LIBS)
+
+.PHONY: clean style
+
+style:
+	astyle -n -s2 -q -pUH *.c *.h common/*.h common/*.c
+
+-include $(BUILDDIR)/*.d
