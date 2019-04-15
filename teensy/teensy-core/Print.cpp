@@ -34,15 +34,12 @@
 // developed for Teensyduino have made their way back into
 // Arduino's code base.  :-)
 
-#include <inttypes.h>
-#include <math.h>
-
-#include "Print.h"
-
+#include <Arduino.h>
 
 
 size_t Print::write(const uint8_t *buffer, size_t size)
 {
+	if (buffer == nullptr) return 0;
 	size_t count = 0;
 	while (size--) count += write(*buffer++);
 	return count;

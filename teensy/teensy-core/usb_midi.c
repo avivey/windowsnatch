@@ -76,8 +76,9 @@ static uint8_t tx_noautoflush=0;
 
 // When the PC isn't listening, how long do we wait before discarding data?
 #define TX_TIMEOUT_MSEC 40
-
-#if F_CPU == 240000000
+#if F_CPU == 256000000
+  #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 1706)
+#elif F_CPU == 240000000
   #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 1600)
 #elif F_CPU == 216000000
   #define TX_TIMEOUT (TX_TIMEOUT_MSEC * 1440)
@@ -133,7 +134,7 @@ void usb_midi_write_packed(uint32_t n)
 	} else {
 		tx_packet->len = MIDI_TX_SIZE;
 		usb_tx(MIDI_TX_ENDPOINT, tx_packet);
-		tx_packet = usb_malloc();
+		tx_packet = NULL;
 	}
 	tx_noautoflush = 0;
 }
@@ -189,7 +190,7 @@ void usb_midi_flush_output(void)
 	if (tx_noautoflush == 0 && tx_packet && tx_packet->index > 0) {
 		tx_packet->len = tx_packet->index * 4;
 		usb_tx(MIDI_TX_ENDPOINT, tx_packet);
-		tx_packet = usb_malloc();
+		tx_packet = NULL;
 	}
 }
 

@@ -761,8 +761,14 @@ enum IRQ_NUMBER_t {
 
 #endif // end of board-specific definitions
 
-
-#if (F_CPU == 240000000)
+#if (F_CPU == 256000000)
+ #define F_PLL 256000000
+ #ifndef F_BUS
+ #define F_BUS 64000000
+ //#define F_BUS 128000000  // all the usual overclocking caveats apply...
+ #endif
+ #define F_MEM 32000000
+#elif (F_CPU == 240000000)
  #define F_PLL 240000000
  #ifndef F_BUS
  #define F_BUS 60000000
@@ -3329,8 +3335,8 @@ typedef struct {
 #define FTM0_CONF		(*(volatile uint32_t *)0x40038084) // Configuration
 #define FTM_CONF_GTBEOUT		0x400				// Global Time Base Output
 #define FTM_CONF_GTBEEN			0x200				// Global Time Base Enable
-#define FTM_CONF_BDMMODE		(((n) & 3) << 6)		// Behavior when in debug mode
-#define FTM_CONF_NUMTOF			(((n) & 31) << 0)		// ratio of counter overflows to TOF bit set
+#define FTM_CONF_BDMMODE(n)		(((n) & 3) << 6)		// Behavior when in debug mode
+#define FTM_CONF_NUMTOF(n)		(((n) & 31) << 0)		// ratio of counter overflows to TOF bit set
 #define FTM0_FLTPOL		(*(volatile uint32_t *)0x40038088) // FTM Fault Input Polarity
 #define FTM_FLTPOL_FLT3POL		0x08				// Fault Input 3 Polarity
 #define FTM_FLTPOL_FLT2POL		0x04				// Fault Input 2 Polarity
@@ -4545,7 +4551,7 @@ typedef struct {
 #define SPI1_MH			(KINETISL_SPI1.MH)		// Match High
 #define SPI1_DL			(KINETISL_SPI1.DL)		// Data Low
 #define SPI1_DH			(KINETISL_SPI1.DH)		// Data High
-#define SPI1_CI			(KINETISL_SPI1.CI)		// Dlear Interrupt
+#define SPI1_CI			(KINETISL_SPI1.CI)		// Clear Interrupt
 #define SPI1_C3			(KINETISL_SPI1.C3)		// Control Register 3
 #endif
 
