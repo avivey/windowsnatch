@@ -142,7 +142,7 @@ bool WS2812Serial::begin()
 	*(portConfigRegister(pin)) = portconfig;
 	dma->destination(uart->D);
 	dma->triggerAtHardwareEvent(hwtrigger);
-	memset(drawBuffer, 0, numled * 3);
+	memset(drawBuffer, 0, numled * 4 * ledWidth);
 	return true;
 }
 
@@ -160,12 +160,15 @@ void WS2812Serial::show()
 #endif
 	// copy drawing buffer to frame buffer
 	const uint8_t *p = drawBuffer;
-	const uint8_t *end = p + (numled * 3);
+	const uint8_t *end = p + (numled * ledWidth);
 	uint8_t *fb = frameBuffer;
 	while (p < end) {
 		uint8_t b = *p++;
 		uint8_t g = *p++;
 		uint8_t r = *p++;
+		uint8_t w = 0;
+		if (ledWidth > 3) w = *p++;
+
 		uint32_t n=0;
 		switch (config) {
 		  case WS2812_RGB: n = (r << 16) | (g << 8) | b; break;
@@ -174,18 +177,22 @@ void WS2812Serial::show()
 		  case WS2812_GBR: n = (g << 16) | (b << 8) | r; break;
 		  case WS2812_BRG: n = (b << 16) | (r << 8) | g; break;
 		  case WS2812_BGR: n = (b << 16) | (g << 8) | r; break;
+		  case WS2812_GRBW: n = (w << 24) | (g << 16) | (r << 8) | b; break;
+		  case WS2812_WGRB: n = (g << 24) | (r << 16) | (b << 8) | w; break;
 		}
-		const uint8_t *stop = fb + 12;
+		if (ledWidth < 4) n <<= 8;
+
+		const uint8_t *stop = fb + 4 * ledWidth;
 		do {
 			uint8_t x = 0x08;
-			if (!(n & 0x00800000)) x |= 0x07;
-			if (!(n & 0x00400000)) x |= 0xE0;
+			if (!(n & 0x80000000)) x |= 0x07;
+			if (!(n & 0x40000000)) x |= 0xE0;
 			n <<= 2;
 			*fb++ = x;
 		} while (fb < stop);
 	}
 	// wait 300us WS2812 reset time
-	uint32_t min_elapsed = (numled * 30) + 300;
+	uint32_t min_elapsed = (numled * ledWidth * 10) + 300;
 	if (min_elapsed < 2500) min_elapsed = 2500;
 	uint32_t m;
 	while (1) {
@@ -196,15 +203,15 @@ void WS2812Serial::show()
 	prior_micros = m;
 	// start DMA transfer to update LEDs  :-)
 #if defined(KINETISK)
-	dma->sourceBuffer(frameBuffer, numled * 12);
+	dma->sourceBuffer(frameBuffer, numled * 4 * ledWidth);
 	dma->transferSize(1);
-	dma->transferCount(numled * 12);
+	dma->transferCount(numled * 4 * ledWidth);
 	dma->disableOnCompletion();
 	dma->enable();
 #elif defined(KINETISL)
 	dma->CFG->SAR = frameBuffer;
 	dma->CFG->DSR_BCR = 0x01000000;
-	dma->CFG->DSR_BCR = numled * 12;
+	dma->CFG->DSR_BCR = numled * 4 * ledWidth;
 	dma->CFG->DCR = DMA_DCR_ERQ | DMA_DCR_CS | DMA_DCR_SSIZE(1) |
 		DMA_DCR_SINC | DMA_DCR_DSIZE(1) | DMA_DCR_D_REQ;
 #endif

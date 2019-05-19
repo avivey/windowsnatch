@@ -33,31 +33,35 @@
 #define WS2812_GBR      3
 #define WS2812_BRG      4
 #define WS2812_BGR      5
+#define WS2812_GRBW     6
+#define WS2812_WGRB     7
 
 class WS2812Serial {
 public:
 	constexpr WS2812Serial(uint16_t num, void *fb, void *db, uint8_t pin, uint8_t cfg) :
-		numled(num), pin(pin), config(cfg),
+		numled(num), pin(pin), config(cfg), ledWidth(cfg >= WS2812_GRBW ? 4 : 3),
 		frameBuffer((uint8_t *)fb), drawBuffer((uint8_t *)db) {
 	}
 	bool begin();
 	void setPixel(uint32_t num, int color) {
-		if (num >= numled) return;
-		num *= 3;
-		drawBuffer[num+0] = color & 255;
-		drawBuffer[num+1] = (color >> 8) & 255;
-		drawBuffer[num+2] = (color >> 16) & 255;
+		setPixel(num,
+			color & 255, (color >> 8) & 255, (color >> 16) & 255,
+			(color >> 24) & 255);
 	}
 	void setPixel(uint32_t num, uint8_t red, uint8_t green, uint8_t blue) {
+		setPixel(num, red, green, blue, 0);
+	}
+	void setPixel(uint32_t num, uint8_t red, uint8_t green, uint8_t blue, uint8_t white) {
 		if (num >= numled) return;
-		num *= 3;
+		num *= ledWidth;
 		drawBuffer[num+0] = blue;
 		drawBuffer[num+1] = green;
 		drawBuffer[num+2] = red;
+		if (ledWidth > 3) drawBuffer[num+3] = white;
 	}
 	void clear() {
-        	memset(drawBuffer, 0, numled * 3);
-	} 	
+		memset(drawBuffer, 0, numled * ledWidth);
+	}
 	void show();
 	bool busy();
 	uint16_t numPixels() {
@@ -67,6 +71,7 @@ private:
 	const uint16_t numled;
 	const uint8_t pin;
 	const uint8_t config;
+	const uint8_t ledWidth;
 	uint8_t *frameBuffer;
 	uint8_t *drawBuffer;
 	DMAChannel *dma = nullptr;
