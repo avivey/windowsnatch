@@ -1,6 +1,7 @@
 {
     "exclude": [
-      "(^teensy/teensy-core/)"
+      "(^teensy/teensy-core/)",
+      "(^teensy/libraries/)"
     ],
     "linters": {
         "chmod": {
