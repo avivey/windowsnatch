@@ -30,11 +30,6 @@ CONFIG = {
     'version': get_git_version(),
     'pin assignment': [
        PinAssignment(0, 1, 2, 3, 4),
-       PinAssignment(5, 6, 7, 8, 9),
-       PinAssignment(10, 11, 12, 24, 25),
-       PinAssignment(26, 27, 28, 29, 30),
-       PinAssignment(23, 22, 21, 20, 19),
-       PinAssignment(18, 17, 16, 15, 14),
     ],
     'usb identifier': {
         'vendor': hex(0x16c0),

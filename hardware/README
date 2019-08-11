@@ -1,7 +1,7 @@
 This version of the code is made up for:
 
-- Teensy 3.6
-- 6 sets of
+- Teensy LC
+- n sets of
     - 1x RGB led (1 pin per color + shared cathode)
     - 2x push-buttons
 
