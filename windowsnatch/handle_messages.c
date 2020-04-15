@@ -48,6 +48,9 @@ void handle_message_BUTTON_PRESS(Buffer buffer) {
   }
 }
 
+void handle_message_PING(Buffer buffer) {
+  signal_error(101);
+}
 
 void handle_message_GET_VERSION(Buffer buffer) {
   signal_error(117);

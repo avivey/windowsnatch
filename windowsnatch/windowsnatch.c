@@ -23,11 +23,13 @@ TARGET_CLASS PUTTY_TARGET_CLASS = {
 };
 
 BOOL teensyConnected = FALSE;
-const UINT_PTR autoReconnectTimer = 21;
+const UINT_PTR IDT_TIMER_RECONNECT = 21;
+const UINT_PTR IDT_TIMER_KEEPALIVE = 24;
 
 void AutoBindTargets();
 void installPutty(int targetId, HWND windowHandle, BOOL silent);
 void AutoReconnectTeensy(HWND, UINT, UINT_PTR, DWORD);
+void KeepAliveTeensy(HWND, UINT, UINT_PTR, DWORD);
 
 void HandleTargetWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd,
                           LONG idObject, LONG idChild,
@@ -66,7 +68,9 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, LPSTR cmdline, int show)
                 HWND_MESSAGE, // Message-only window.
                 NULL, hInst, NULL);
 
-  SetTimer(hWnd, autoReconnectTimer, 30 * 1000, AutoReconnectTeensy);
+  // TODO These timers should probably use a message rather then a callback
+  SetTimer(hWnd, IDT_TIMER_RECONNECT, 30 * 1000, AutoReconnectTeensy);
+  SetTimer(hWnd, IDT_TIMER_KEEPALIVE, KEEPALIVE_TIMER_SECONDS * 1000, KeepAliveTeensy);
   AutoReconnectTeensy(hWnd, 0, 0, 0);
   AutoBindTargets();
 
@@ -409,6 +413,14 @@ void AutoReconnectTeensy(HWND hwnd, UINT _, UINT_PTR idEvent, DWORD __) {
   if (teensyConnected) return;
 
   ConnectTeensy(TRUE);
+}
+
+void KeepAliveTeensy(HWND hwnd, UINT _, UINT_PTR idEvent, DWORD __) {
+  if (!teensyConnected) return;
+
+  rawhid_buf[0] = ICD_MAGIC_NUMBER;
+  rawhid_buf[1] = MSG_CODE_PING;
+  rawhid_send(0, rawhid_buf, 64, 100);
 }
 
 #define HELP_ABOUT_TEMPLATE _T( \

@@ -42,14 +42,16 @@ CONFIG = {
         'usage page': hex(0xFFAB),
         'usage id': hex(0x0003),        # This encodes protocol version.
     },
+    'keepalive timer': 60,    # seconds. device will wait for 2 cycles.
     'magic number': hex(0xA2, 1),
     'icd commands': {
+        'PING': 0,
         'GET_VERSION': 1,
         'SET_LED': 2,
         'ENTER_PROGRAMMING_MODE': 15,
         'VERSION_STRING': 16 + 0,
         'BUTTON_PRESS': 16 + 2,
-    }
+    },
 }
 
 
@@ -69,6 +71,8 @@ def build_configuration():
         '#define CODE_VERSION_LEN %s' % len(CONFIG['version']),
 
         '#define NUMBER_OF_TARGETS %d' % len(CONFIG['pin assignment']),
+
+        '#define KEEPALIVE_TIMER_SECONDS %d' % CONFIG['keepalive timer'],
 
         '#endif // WINDOWSNATCH_CONFIG_H',
     ]

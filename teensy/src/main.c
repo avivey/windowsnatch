@@ -47,6 +47,15 @@ void transmit_clicks(toolset_t* toolset, void* __) {
   }
 }
 
+void set_led_color_operator(toolset_t* toolset, void* pcolor) {
+  unsigned char color = *(unsigned char*)pcolor;
+  set_led_color(toolset, color);
+}
+
+#define ITERATION_TIME_MS 10
+int _keepalive_next = 0;
+int _keepalive_timer = 0;
+
 int main(void) {
   init_all_led_pins();
   init_buttons();
@@ -57,16 +66,16 @@ int main(void) {
     Buffer buffer = get_buffer();
     if (usb_rawhid_recv(buffer, 0)) { // 0 timeout = do not wait
       dispatch_incoming_message(buffer);
+      _keepalive_next = _keepalive_timer + KEEPALIVE_TIMER_SECONDS * 1000 * 2;
+    } else if (_keepalive_next < _keepalive_timer) {
+      unsigned char black = 0;
+      iterate_over_all_toolsets(set_led_color_operator, &black);
     }
 
     iterate_over_all_toolsets(transmit_clicks, NULL);
-    delay(10);
+    delay(ITERATION_TIME_MS);
+    _keepalive_timer += ITERATION_TIME_MS;
   }
-}
-
-void set_led_color_operator(toolset_t* toolset, void* pcolor) {
-  unsigned char color = *(unsigned char*)pcolor;
-  set_led_color(toolset, color);
 }
 
 void transmit_version_info() {
