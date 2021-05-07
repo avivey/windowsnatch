@@ -1,6 +1,6 @@
 /* Teensyduino Core Library
  * http://www.pjrc.com/teensy/
- * Copyright (c) 2017 PJRC.COM, LLC.
+ * Copyright (c) 2019 PJRC.COM, LLC.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -28,18 +28,22 @@
  * SOFTWARE.
  */
 
-#include <Arduino.h>
 #include "HardwareSerial.h"
+#include "core_pins.h"
+#include "Arduino.h"
 
-#ifdef HAS_KINETISK_UART4
+// define our static objects
+HardwareSerial 	*HardwareSerial::s_serials_with_serial_events[CNT_HARDWARE_SERIAL];
+uint8_t 		HardwareSerial::s_count_serials_with_serial_events = 0;
 
-HardwareSerial5 Serial5(&serialEvent5);
+// simple helper function that add us to the list of Serial ports that have
+// their own serialEvent code defined that needs to be called at yield.
+void HardwareSerial::addToSerialEventsList() {
+	for (uint8_t i = 0; i < s_count_serials_with_serial_events; i++) {
+		if (s_serials_with_serial_events[i] == this) return; // already in the list.
+	}
 
-uint8_t _serialEvent5_default __attribute__((weak)) PROGMEM = 0 ;
-
-void HardwareSerial5::begin(uint32_t baud) { 
-	serial5_begin(BAUD2DIV3(baud));
-	if (!_serialEvent5_default) addToSerialEventsList();
+	s_serials_with_serial_events[s_count_serials_with_serial_events++] = this;
+	yield_active_check_flags |= YIELD_CHECK_HARDWARE_SERIAL;
 }
 
-#endif
