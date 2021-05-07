@@ -9,7 +9,7 @@ TEENSY = LC
 TEENSY_CORE_SPEED = 48000000
 
 # USB features options - see usb_desc.h
-OPTIONS = -D USB_RAWHID -DLAYOUT_US_ENGLISH
+OPTIONS = -D USB_RAWHID
 
 # directory to build in
 BUILDDIR = $(abspath $(CURDIR)/build)
@@ -34,9 +34,7 @@ ifdef IDE_COMPAT_MODE
   IDE_COMPAT_OPTIONS = -DARDUINO=10805 -DTEENSYDUINO=124
 endif
 
-#************************************************************************
-# Settings below this point usually do not need to be edited
-#************************************************************************
+
 
 # CPPFLAGS = compiler options for C and C++
 CPPFLAGS = -Wall -g -Os -mthumb -ffunction-sections -fdata-sections \
@@ -112,7 +110,8 @@ NEEDED_CORE_FILES = EventResponder.o pins_teensy.o yield.o \
 	HardwareSerial1.o HardwareSerial2.o HardwareSerial3.o HardwareSerial4.o \
 	HardwareSerial5.o HardwareSerial6.o analog.o mk20dx128.o nonstd.o \
 	serial1.o serial2.o serial3.o serial4.o serial5.o serial6_lpuart.o \
-	usb_desc.o usb_dev.o usb_inst.o usb_mem.o usb_rawhid.o usb_seremu.o
+	usb_desc.o usb_dev.o usb_inst.o usb_mem.o usb_rawhid.o usb_seremu.o \
+	serialEvent.o HardwareSerial.o
 NEEDED_CORE_FILES := $(foreach file,$(NEEDED_CORE_FILES), $(COREPATH)/$(file))
 
 SOURCES := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o) $(INO_FILES:.ino=.o) \
