@@ -33,9 +33,9 @@
 
 #include "usb_desc.h"
 
-#include "keylayouts.h"
-
 #if defined(KEYBOARD_INTERFACE)
+
+#include "keylayouts.h"
 
 #include <inttypes.h>
 
