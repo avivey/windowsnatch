@@ -10,8 +10,8 @@ Components:
 - Linux side: Not yet included; A way for the console to notify the server about
   status.
 - config.py: Contains configuration and generates code for the other parts.
+- hardware: Mostly a Teensy and some leds.
 
 Building:
-- Using `make` and `gcc` on Linux.
-- See other Readme files for special instructions on obtaining toolchains.
-- Read error messages for other missing toolchains.
+- Using `make` and Docker.
+- Run `make docker_image` to build images to compile.

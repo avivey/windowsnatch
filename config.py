@@ -238,7 +238,7 @@ For command BUTTON_PRESS:
 - Pair: Byte 0 - index of LED (0-based)
 -       Byte 1 - Which button pressed (1 or 2).
 
-ENTER_PROGRAMMING_MODE:
+PING, GET_VERSION, ENTER_PROGRAMMING_MODE:
 - There's no extra data
 
 VERSION_STRING:
