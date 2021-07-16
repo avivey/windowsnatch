@@ -395,9 +395,9 @@ static uint8_t multitouch_report_desc[] = {
         0x09, 0x56,                     //   Usage (Scan Time)
         0x81, 0x02,                     //   Input (variable,absolute)
         0x09, 0x54,                     //   USAGE (Contact count)
-        0x25, 0x7f,                     //   LOGICAL_MAXIMUM (127) 
+        0x25, 0x7f,                     //   LOGICAL_MAXIMUM (127)
         0x95, 0x01,                     //   REPORT_COUNT (1)
-        0x75, 0x08,                     //   REPORT_SIZE (8)    
+        0x75, 0x08,                     //   REPORT_SIZE (8)
         0x81, 0x02,                     //   INPUT (Data,Var,Abs)
         0x05, 0x0D,                     //   Usage Page (Digitizers)
         0x09, 0x55,                     //   Usage (Contact Count Maximum)
@@ -611,7 +611,7 @@ static uint8_t config_descriptor[CONFIG_DESC_SIZE] = {
         1,                                      // bConfigurationValue
         0,                                      // iConfiguration
         0xC0,                                   // bmAttributes
-        50,                                     // bMaxPower
+        240,                                     // bMaxPower
 
 #ifdef CDC_IAD_DESCRIPTOR
         // interface association descriptor, USB ECN, Table 9-Z
