@@ -7,7 +7,6 @@ typedef struct {
   unsigned char id;
   unsigned char light_index;
   button_t button1;
-  button_t button2;
 } toolset_t;
 
 typedef void (*toolset_operator)(toolset_t*, void*);

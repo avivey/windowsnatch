@@ -14,32 +14,21 @@ void animate_error(int count);
 
 void transmit_clicks(toolset_t* toolset, void* __) {
   int keydown1 = is_keydown(toolset->button1);
-  int keydown2 = is_keydown(toolset->button2);
 
-  if (!keydown1 && !keydown2) {
+  if (!keydown1) {
     return;
   }
 
   Buffer buffer = clean_and_get_buffer();
   buffer[0] = ICD_MAGIC_NUMBER;
   buffer[1] = MSG_CODE_BUTTON_PRESS;
-  if (keydown1 && keydown2) {
-    buffer[2] = 2;
-  } else {
-    buffer[2] = 1;
-  }
+  buffer[2] = 1;
 
   int n = 3;
   if (keydown1) {
     buffer[n] = toolset->id;
     n++;
     buffer[n] = 1;
-    n++;
-  }
-  if (keydown2) {
-    buffer[n] = toolset->id;
-    n++;
-    buffer[n] = 2;
     n++;
   }
 

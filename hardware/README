@@ -3,6 +3,13 @@ This version of the code is made up for:
 - Teensy LC
 - n sets of
     - 1x WS2812 RGB led (1 shared pin for all n sets!)
-    - 2x push-buttons
+    - 1x push-button
+- 2x rocker switches (DPST) (Not actually used ATM)
+- 2x rotary encoded w/push-button (Not actually used ATM)
 
 config.py holds the pin-out.
+
+
+Use `wireviz *yml` to produce fancy pictures of wiring.
+See https://github.com/formatc1702/WireViz
+and https://github.com/formatc1702/WireViz/blob/master/docs/syntax.md

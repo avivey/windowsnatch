@@ -1,0 +1,68 @@
+templates:
+  - &connector_ribbon
+    type: 2x5
+    pincount: 10
+    image:
+      src: 2x5-IDC-Pin-Numbering.png
+
+  - &wire_ribbon
+    wirecount: 10
+    color_code: IEC
+    type: IDC Ribbon
+
+connectors:
+  LC light:
+    <<: *connector_ribbon
+    pinlabels: [
+      '12', GND,
+      '10', '14',
+      '15', '(nc)',
+      '9', '17-5V',
+      '16', '+5V',
+    ]
+
+  LC TOP:
+    <<: *connector_ribbon
+    pinlabels: [
+      '5', 'GND',
+      '18', '22',
+      '7', '20',
+      '21', '3',
+      '23', '+3V',
+    ]
+
+  light:
+    <<: *connector_ribbon
+    pinlabels: [
+      'SW N',  GND,
+      'SW NE', SW NW,
+      'SW SE', (nc),
+      'SE S',  NEOPIX DIN,
+      'SW SW', +5V,
+    ]
+
+  encoders:
+    <<: *connector_ribbon
+    pinlabels: [
+      SW 1,     GND,
+      SW 2,     ENC1 CLK,
+      ENC2 SW,  ENC1 DT,
+      ENC2 DT,  ENC1 SW,
+      ENC2 CLK, +V,
+    ]
+
+cables:
+  W1:
+    <<: *wire_ribbon
+  W2:
+    <<: *wire_ribbon
+
+connections:
+  -
+    - LC light: [1-10]
+    - W1: [1-10]
+    - light: [1-10]
+  -
+    - LC TOP: [1-10]
+    - W2: [1-10]
+    - encoders: [1-10]

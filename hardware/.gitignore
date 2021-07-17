@@ -1,0 +1,8 @@
+*.png
+*.tsv
+*.gv
+*.html
+*.svg
+
+!2x5-IDC-Pin-Numbering.png
+!README

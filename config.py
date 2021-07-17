@@ -4,7 +4,7 @@ from collections import namedtuple, OrderedDict
 import subprocess
 from os import path
 
-PinAssignment = namedtuple("PinAssignment", ["led_index", "button1", "button2"])
+PinAssignment = namedtuple("PinAssignment", ["led_index", "button1", "name"])
 
 
 def hex(n: int, bytes=2) -> str:
@@ -29,12 +29,12 @@ def get_git_version():
 CONFIG = {
     "version": get_git_version(),
     "pin assignment": [
-        PinAssignment(0, 11, 21),
-        PinAssignment(1, 6, 7),
-        PinAssignment(2, 15, 17),
-        PinAssignment(3, 16, 18),
-        PinAssignment(4, 12, 19),
-        PinAssignment(5, 14, 20),
+        PinAssignment(5, 14, "NW"),
+        PinAssignment(0, 16, "SW"),
+        PinAssignment(4, 12, "N"),
+        PinAssignment(1, 9, "S"),
+        PinAssignment(3, 10, "NE"),
+        PinAssignment(2, 15, "SE"),
     ],
     "usb identifier": {
         "vendor": hex(0x16C0),
@@ -103,13 +103,13 @@ def build_keydown_config():
         "#define BUTTON_NAMES_H",
     ]
 
-    i = 1
+    i = 0
     names.append("typedef enum BUTTONS {")
 
     buttons = OrderedDict()
+    set: PinAssignment
     for set in CONFIG["pin assignment"]:
         buttons["BUTTON%d1" % i] = set.button1
-        buttons["BUTTON%d2" % i] = set.button2
         i += 1
 
     init, mask, select = list(), list(), list()
@@ -158,7 +158,7 @@ def build_init_toolsets():
 
     o.append("toolset_t toolset_all_toolsets[%d] = {" % sets_count)
     for set in CONFIG["pin assignment"]:
-        content = ", ".join(map(str, [i, set.led_index, set.button1, set.button2]))
+        content = ", ".join(map(str, [i, set.led_index, set.button1]))
         o.append("{" + content + "},")
 
         i += 1
