@@ -1,4 +1,4 @@
-.PHONY: clean style
+.PHONY: clean style lint
 
 default style clean docker_image:
 	make -C teensy $@
@@ -13,4 +13,5 @@ clean-gen:
 style: lint
 
 lint:
+	black config.py
 	arc lint
