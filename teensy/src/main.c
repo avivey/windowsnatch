@@ -5,6 +5,8 @@
 #include "toolset.h"
 #include "common/compat.h"
 
+#include "lights.h"
+
 #include "common/icd_messages.h"
 #include "common/configuration.h"
 
@@ -56,13 +58,15 @@ void set_led_color_operator(toolset_t* toolset, void* pcolor) {
 int _keepalive_next = 0;
 int _keepalive_timer = 0;
 
+void animate_bar(int count);
+
 int main(void) {
   init_all_led_pins();
   init_buttons();
 
-  animate_error(2);
+  animate_bar(3);
 
-  while (1) {
+  while (true) {
     Buffer buffer = get_buffer();
     if (usb_rawhid_recv(buffer, 0)) { // 0 timeout = do not wait
       dispatch_incoming_message(buffer);
@@ -73,6 +77,7 @@ int main(void) {
     }
 
     iterate_over_all_toolsets(transmit_clicks, NULL);
+    lights_render();
     delay(ITERATION_TIME_MS);
     _keepalive_timer += ITERATION_TIME_MS;
   }
@@ -92,6 +97,29 @@ void transmit_version_info() {
 }
 
 
+unsigned char animation[] = {
+  0, 1, 2, 3, 4, 5, 6, 7
+};
+
+void animate_bar_operator(toolset_t* toolset, void* poffset) {
+  int offset = *(int*)poffset;
+  unsigned char color = animation[(toolset->id + offset) % 8];
+  set_led_color(toolset, color);
+}
+
+
+void animate_bar(int count) {
+  int offset = 3;
+
+  while (count >= 0) {
+    iterate_over_all_toolsets(animate_bar_operator, &offset);
+    lights_render();
+    delay(1000);
+    offset ++;
+    count --;
+  }
+}
+
 void signal_error(int count) {
   animate_error(count);
 }
@@ -102,8 +130,10 @@ void animate_error(int count) {
 
   while (count > 0) {
     iterate_over_all_toolsets(set_led_color_operator, &red);
+    lights_render();
     delay(200);
     iterate_over_all_toolsets(set_led_color_operator, &black);
+    lights_render();
     delay(200);
     count --;
   }

@@ -111,11 +111,15 @@ NEEDED_CORE_FILES = EventResponder.o pins_teensy.o yield.o \
 	HardwareSerial5.o HardwareSerial6.o analog.o mk20dx128.o nonstd.o \
 	serial1.o serial2.o serial3.o serial4.o serial5.o serial6_lpuart.o \
 	usb_desc.o usb_dev.o usb_inst.o usb_mem.o usb_rawhid.o usb_seremu.o \
-	serialEvent.o HardwareSerial.o
+	serialEvent.o HardwareSerial.o \
+	DMAChannel.o new.o
 NEEDED_CORE_FILES := $(foreach file,$(NEEDED_CORE_FILES), $(COREPATH)/$(file))
 
+NEEDED_LIBS = WS2812Serial/WS2812Serial.o
+NEEDED_LIBS := $(foreach file,$(NEEDED_LIBS), $(LIBRARYPATH)/$(file))
+
 SOURCES := $(C_FILES:.c=.o) $(CPP_FILES:.cpp=.o) $(INO_FILES:.ino=.o) \
-	$(NEEDED_CORE_FILES)
+	$(NEEDED_CORE_FILES) $(NEEDED_LIBS)
 OBJS := $(foreach src,$(SOURCES), $(BUILDDIR)/$(src))
 
 hex: $(BUILDDIR)/$(TARGET).hex

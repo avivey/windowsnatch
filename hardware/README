@@ -2,7 +2,7 @@ This version of the code is made up for:
 
 - Teensy LC
 - n sets of
-    - 1x RGB led (1 pin per color + shared cathode)
+    - 1x WS2812 RGB led (1 shared pin for all n sets!)
     - 2x push-buttons
 
 config.py holds the pin-out.

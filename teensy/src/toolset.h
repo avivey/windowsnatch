@@ -5,9 +5,7 @@
 
 typedef struct {
   unsigned char id;
-  unsigned char led_pin_red;
-  unsigned char led_pin_green;
-  unsigned char led_pin_blue;
+  unsigned char light_index;
   button_t button1;
   button_t button2;
 } toolset_t;

@@ -4,9 +4,7 @@ from collections import namedtuple, OrderedDict
 import subprocess
 from os import path
 
-PinAssignment = namedtuple(
-    "PinAssignment", ["red", "green", "blue", "button1", "button2"]
-)
+PinAssignment = namedtuple("PinAssignment", ["led_index", "button1", "button2"])
 
 
 def hex(n: int, bytes=2) -> str:
@@ -31,7 +29,12 @@ def get_git_version():
 CONFIG = {
     "version": get_git_version(),
     "pin assignment": [
-        PinAssignment(0, 1, 2, 3, 4),
+        PinAssignment(0, 11, 21),
+        PinAssignment(1, 6, 7),
+        PinAssignment(2, 15, 17),
+        PinAssignment(3, 16, 18),
+        PinAssignment(4, 12, 19),
+        PinAssignment(5, 14, 20),
     ],
     "usb identifier": {
         "vendor": hex(0x16C0),
@@ -155,10 +158,9 @@ def build_init_toolsets():
 
     o.append("toolset_t toolset_all_toolsets[%d] = {" % sets_count)
     for set in CONFIG["pin assignment"]:
-        o.append(
-            "{%d, %d, %d, %d, %s, %s},"
-            % (i, set.red, set.green, set.blue, set.button1, set.button2)
-        )
+        content = ", ".join(map(str, [i, set.led_index, set.button1, set.button2]))
+        o.append("{" + content + "},")
+
         i += 1
     o.append("};")
 

@@ -1,6 +1,7 @@
 #include "WProgram.h"
 
 #include "toolset.h"
+#include "lights.h"
 
 #include "toolsets_init.inc"
 
@@ -10,14 +11,8 @@ void iterate_over_all_toolsets(toolset_operator operator, void* extra) {
   }
 }
 
-void init_toolset_leds(toolset_t* toolset, void* _) {
-  pinMode(toolset->led_pin_red, OUTPUT);
-  pinMode(toolset->led_pin_green, OUTPUT);
-  pinMode(toolset->led_pin_blue, OUTPUT);
-}
-
 void init_all_led_pins() {
-  iterate_over_all_toolsets(init_toolset_leds, NULL);
+  lights_init();
 }
 
 toolset_t* get_toolset(int index) {
@@ -30,11 +25,5 @@ toolset_t* get_toolset(int index) {
 void set_led_color(toolset_t* toolset, unsigned char color) {
   if (toolset == NULL) return;
 
-  int r = (color & 0b100) ? HIGH : LOW;
-  int g = (color & 0b010) ? HIGH : LOW;
-  int b = (color & 0b001) ? HIGH : LOW;
-
-  digitalWriteFast(toolset->led_pin_red, r);
-  digitalWriteFast(toolset->led_pin_green, g);
-  digitalWriteFast(toolset->led_pin_blue, b);
+  lights_set_pixel_1bit(toolset->light_index, color);
 }
