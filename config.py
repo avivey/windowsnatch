@@ -9,7 +9,7 @@ PinAssignment = namedtuple(
 )
 
 
-def hex(n, bytes=2):
+def hex(n: int, bytes=2) -> str:
     code = "0%dX" % (2 * bytes)
     return "0x" + format(n, code)
 
@@ -37,7 +37,9 @@ CONFIG = {
         "vendor": hex(0x16C0),
         "product": hex(0x0486),
         "usage page": hex(0xFFAB),
-        "usage id": hex(0x0003),  # This encodes protocol version.
+        "usage id": hex(0x0200),  # I think this is ignored.
+        "manufacturer name": "Teensy LC-2",
+        "product name": "Teensy Aviv RawHID",
     },
     "keepalive timer": 60,  # seconds. device will wait for 2 cycles.
     "magic number": hex(0xA2, 1),
@@ -52,20 +54,31 @@ CONFIG = {
 }
 
 
+def format_char_array(text: str) -> str:
+    return "{'" + ("','".join(text)) + "'}"
+
+
 def build_configuration():
     usb = CONFIG["usb identifier"]
 
     conf = [
         "#ifndef WINDOWSNATCH_CONFIG_H",
         "#define WINDOWSNATCH_CONFIG_H",
+        "",
         "#define USB_VENDOR_ID %s" % usb["vendor"],
         "#define USB_PRODUCT_ID %s" % usb["product"],
         "#define USB_HID_USAGE_PAGE %s" % usb["usage page"],
         "#define USB_HID_USAGE_ID %s" % usb["usage id"],
+        "#define USB_MANUFACTURER_NAME %s"
+        % format_char_array(usb["manufacturer name"]),
+        "#define USB_MANUFACTURER_NAME_LEN %s" % len(usb["manufacturer name"]),
+        "#define USB_PRODUCT_NAME %s" % format_char_array(usb["product name"]),
+        "#define USB_PRODUCT_NAME_LEN %s" % len(usb["product name"]),
         '#define CODE_VERSION_STR "%s"' % CONFIG["version"],
         "#define CODE_VERSION_LEN %s" % len(CONFIG["version"]),
         "#define NUMBER_OF_TARGETS %d" % len(CONFIG["pin assignment"]),
         "#define KEEPALIVE_TIMER_SECONDS %d" % CONFIG["keepalive timer"],
+        "",
         "#endif // WINDOWSNATCH_CONFIG_H",
     ]
     return conf

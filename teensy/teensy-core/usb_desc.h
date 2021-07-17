@@ -39,6 +39,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include "common/configuration.h"
+
 #define ENDPOINT_UNUSED			0x00
 #define ENDPOINT_TRANSMIT_ONLY		0x15
 #define ENDPOINT_RECEIVE_ONLY		0x19
@@ -116,14 +118,14 @@ let me know?  http://forum.pjrc.com/forums/4-Suggestions-amp-Bug-Reports
 */
 
 #if defined(USB_RAWHID)
-  #define VENDOR_ID		0x16C0
-  #define PRODUCT_ID		0x0489
-  #define RAWHID_USAGE_PAGE	0xFFAB  // recommended: 0xFF00 to 0xFFFF
-  #define RAWHID_USAGE		0x0200  // recommended: 0x0100 to 0xFFFF
-  #define MANUFACTURER_NAME	{'T','e','e','n','s','y','d','u','i','n','o'}
-  #define MANUFACTURER_NAME_LEN	11
-  #define PRODUCT_NAME		{'T','e','e','n','s','y','d','u','i','n','o',' ','R','a','w','H','I','D'}
-  #define PRODUCT_NAME_LEN	18
+  #define VENDOR_ID		USB_VENDOR_ID
+  #define PRODUCT_ID		USB_PRODUCT_ID
+  #define RAWHID_USAGE_PAGE	USB_HID_USAGE_PAGE  // recommended: 0xFF00 to 0xFFFF
+  #define RAWHID_USAGE		USB_HID_USAGE_ID  // recommended: 0x0100 to 0xFFFF
+  #define MANUFACTURER_NAME	USB_MANUFACTURER_NAME
+  #define MANUFACTURER_NAME_LEN	USB_MANUFACTURER_NAME_LEN
+  #define PRODUCT_NAME		USB_PRODUCT_NAME
+  #define PRODUCT_NAME_LEN	USB_PRODUCT_NAME_LEN
   #define EP0_SIZE		64
   #define NUM_ENDPOINTS         4
   #define NUM_USB_BUFFERS	12

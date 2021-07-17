@@ -443,7 +443,9 @@ void HandleTeensyVersionString(LPCTSTR version_string) {
 BOOL ConnectTeensy(BOOL silent) {
   DisconnectTeensy();
 
-  int count = rawhid_open(1, 0x16C0, 0x0486, 0xFFAB, 0x0200);
+  int count = rawhid_open(1,
+                          USB_VENDOR_ID, USB_PRODUCT_ID,
+                          USB_HID_USAGE_PAGE, USB_HID_USAGE_ID);
   if (count <= 0) {
     if (!silent) ShowError(_T("Teensy device not found"));
     return FALSE;
