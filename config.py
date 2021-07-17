@@ -116,7 +116,7 @@ def build_keydown_config():
     for button, pin in buttons.items():
         names.append("%s = %d," % (button, pin))
         mask.append("#define %s_MASK %s" % (button, mask_value()))
-        init.append("pinMode(%s, INPUT_PULLDOWN);" % button)
+        init.append("pinMode(%s, INPUT_PULLUP);" % button)
         select.append(
             "if (button == %s)\n  return __is_keydown(button, %s_MASK);"
             % (button, button)

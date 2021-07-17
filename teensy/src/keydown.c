@@ -12,7 +12,7 @@ static button_mask_t button_buffer = 0;
 #define BOOL(X) X ? TRUE : FALSE
 
 int __is_keydown(int pin, button_mask_t mask) {
-  int is_pressed = BOOL(digitalRead(pin));
+  int is_pressed = !BOOL(digitalRead(pin));
   int last = BOOL(button_buffer & mask);
 
   if (last == is_pressed) {
