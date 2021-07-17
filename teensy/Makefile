@@ -47,7 +47,8 @@ docker_image:
 	docker build -t $(DOCKER_IMAGE_NAME) - < Dockerfile
 
 style:
-	astyle -n -s2 -q -pUH src/*.c src/*.h src/*.inc t/*.c t/*.c t/stubs/*.h
+	astyle -n -s2 -q -pUH \
+		src/*.c src/*.cpp src/*.h src/*.inc t/*.c t/*.c t/stubs/*.h
 
 test:
 	make -C t
