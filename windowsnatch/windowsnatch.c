@@ -403,7 +403,7 @@ void BuildRebindSubmenu(HMENU submenu) {
     TCHAR *title = target->windowHandle ?
                    target->targetClass->className : unbound_title;
 
-    _sntprintf(buff, LEN_BUFF_LONG, _T("%d: %s"), i, title);
+    _sntprintf(buff, LEN_BUFF_LONG, _T("%d: %s"), i + 1, title);
     InsertMenu(submenu, i, MF_BYPOSITION | MF_STRING,
                ID_REBIND_TARGET_0 + i, buff);
   }
