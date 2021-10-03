@@ -17,6 +17,7 @@ LINK_FLAGS += -s  # Strip debug information
 default: $(BUILDDIR)/windowsnatch.exe
 
 OBJECT_FILES = windowsnatch.o trayicon.o find_window.o relocate_window.o
+OBJECT_FILES += audio.o
 OBJECT_FILES += usb_hid.o common/icd.o common/icd_dispatch.o handle_messages.o
 
 OBJECT_FILES_LIST = $(foreach obj,$(OBJECT_FILES), $(BUILDDIR)/$(obj))

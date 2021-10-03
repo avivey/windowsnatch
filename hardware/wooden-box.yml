@@ -46,8 +46,8 @@ connectors:
     pinlabels: [
       SW 1,     GND,
       SW 2,     ENC1 CLK,
-      ENC2 SW,  ENC1 DT,
-      ENC2 DT,  ENC1 SW,
+      ENC2 BTN,  ENC1 DATA,
+      ENC2 DATA,  ENC1 BTN,
       ENC2 CLK, +V,
     ]
 

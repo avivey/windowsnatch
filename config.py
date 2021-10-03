@@ -3,8 +3,22 @@
 from collections import namedtuple, OrderedDict
 import subprocess
 from os import path
+from typing import List, NamedTuple, Tuple
+
+# Type pin
+Pin = int
 
 PinAssignment = namedtuple("PinAssignment", ["led_index", "button1", "name"])
+
+
+class EncoderPinAssignment(NamedTuple):
+    name: str
+    button: Pin
+    clock: Pin
+    data: Pin
+
+    def encoder_pins(self) -> Tuple[Pin, Pin]:
+        return (self.clock, self.data)
 
 
 def hex(n: int, bytes=2) -> str:
@@ -26,6 +40,12 @@ def get_git_version():
     return hash
 
 
+def is_interrupt_pin(pin: Pin) -> bool:
+    # This is for LC:
+    # 2 - 12, 14, 15, 20 - 23
+    return pin in range(2, 24) and pin not in [13, 16, 17, 18, 19, 24]
+
+
 CONFIG = {
     "version": get_git_version(),
     "pin assignment": [
@@ -35,6 +55,10 @@ CONFIG = {
         PinAssignment(1, 9, "S"),
         PinAssignment(3, 10, "NE"),
         PinAssignment(2, 15, "SE"),
+    ],
+    "encoders": [
+        EncoderPinAssignment("left1", 3, 22, 20),
+        EncoderPinAssignment("right2", 7, 23, 21),
     ],
     "usb identifier": {
         "vendor": hex(0x16C0),
@@ -53,6 +77,7 @@ CONFIG = {
         "ENTER_PROGRAMMING_MODE": 15,
         "VERSION_STRING": 16 + 0,
         "BUTTON_PRESS": 16 + 2,
+        "ENCODER_CHANGE": 16 + 3,
     },
 }
 
@@ -110,6 +135,9 @@ def build_keydown_config():
     set: PinAssignment
     for set in CONFIG["pin assignment"]:
         buttons["BUTTON%d1" % i] = set.button1
+        i += 1
+    for encoder in CONFIG["encoders"]:
+        buttons["BUTTON%d1" % i] = encoder.button
         i += 1
 
     init, mask, select = list(), list(), list()
@@ -169,6 +197,31 @@ def build_init_toolsets():
     return o
 
 
+def build_encoders_config():
+    init: List[str] = list()
+    encoder: EncoderPinAssignment
+
+    encoders: List[str] = list()
+
+    i = 0
+    for encoder in CONFIG["encoders"]:
+        # I wasn't able to initialize the Encoders in an array, so I'm just
+        # dumping them in there.
+        var_name = f"enc{i}"
+        init.append(f"Encoder {var_name}({encoder.clock}, {encoder.data});")
+        # init.append(f"int8_t encoder{i}_last_value = 0;")
+        encoders.append(f"{{{i}, (button_t){encoder.button}, &{var_name}}},")
+        i += 1
+
+    init.append(f"encoder_t all_encoders[{i}] = {{")
+    init.extend(encoders)
+    init.append("};")
+
+    init.append(f"const int NUM_ENCODERS = {i};")
+
+    return init
+
+
 def build_icd_config():
     dispatcher = list()
 
@@ -222,9 +275,18 @@ def write_to(filename, content):
 def assert_pin_sanity():
     pins = set()
     for pinset in CONFIG["pin assignment"]:
-        for pin in pinset:
+        pin = pinset.button1
+        assert pin not in pins, "Pin defined twice: %s" % pin
+        pins.add(pin)
+
+    for encoder in CONFIG["encoders"]:
+        for pin in encoder:
             assert pin not in pins, "Pin defined twice: %s" % pin
             pins.add(pin)
+        for pin in encoder.encoder_pins():
+            assert is_interrupt_pin(pin), (
+                "Encoder pins should be interrupt pin: %s" % pin
+            )
 
 
 if __name__ == "__main__":
@@ -243,6 +305,9 @@ if __name__ == "__main__":
     toolsets = build_init_toolsets()
     write_to("/teensy/src/toolsets_init.inc", toolsets)
 
+    encoders_init = build_encoders_config()
+    write_to("/teensy/src/encoders_init.inc", encoders_init)
+
     subprocess.call(["astyle", "-n", "-s2", "-q", "-pUH"] + written_files)
 
 """
@@ -254,13 +319,19 @@ The ICD looks like this:
 
 For command SET_LED, payload is:
 - Byte 2: number of pairs.
-- Pair: Byte 0 - index of LED (0-based)
+- Pair: Byte 0 - index of LED/toolset (0-based)
 -       Byte 1 - Color (0-7), RGB, one bit per color.
 
+# TODO this command has a stupid api, esp as there's only 1 button per toolset.
 For command BUTTON_PRESS:
 - Byte 2: number of pairs.
-- Pair: Byte 0 - index of LED (0-based)
+- Pair: Byte 0 - index of LED/toolset (0-based)
 -       Byte 1 - Which button pressed (1 or 2).
+
+For command ENCODER_CHANGE:
+- Byte 2: encoder id (0-based)
+- Byte 3: old value (signed int8)
+- Byte 4: new value (signed int8)
 
 PING, GET_VERSION, ENTER_PROGRAMMING_MODE:
 - There's no extra data

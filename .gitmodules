@@ -1,0 +1,3 @@
+[submodule "teensy/libraries/encoder"]
+	path = teensy/libraries/encoder
+	url = https://github.com/PaulStoffregen/Encoder.git

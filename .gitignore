@@ -11,6 +11,7 @@ common/icd_dispatch.c
 button_names.h
 button_setup.inc
 toolsets_init.inc
+encoders_init.inc
 
 # simlink to where the Teensy tools are:
 /teensy/tools

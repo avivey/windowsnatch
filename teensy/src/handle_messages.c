@@ -33,4 +33,5 @@ void handle_message_ENTER_PROGRAMMING_MODE(Buffer buffer) {
 
 void handle_message_VERSION_STRING(Buffer buffer) {}
 void handle_message_BUTTON_PRESS(Buffer buffer) {}
+void handle_message_ENCODER_CHANGE(Buffer buffer) {}
 void handle_message_PING(Buffer buffer) {}

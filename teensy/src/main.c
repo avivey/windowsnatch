@@ -6,6 +6,7 @@
 #include "common/compat.h"
 
 #include "lights.h"
+#include "encoders.h"
 
 #include "common/icd_messages.h"
 #include "common/configuration.h"
@@ -38,6 +39,32 @@ void transmit_clicks(toolset_t* toolset, void* __) {
   }
 }
 
+void transmit_encoders(encoder_t* encoder, void* __) {
+  encoder_read_result_t info = encoder_get_and_reset(encoder);
+
+  int keydown1 = is_keydown(encoder->button);
+
+
+  if (keydown1 || info.old_value != info.new_value) {
+    Buffer buffer = clean_and_get_buffer();
+    buffer[0] = ICD_MAGIC_NUMBER;
+    buffer[1] = MSG_CODE_ENCODER_CHANGE;
+
+    int n = 2;
+    buffer[n++] = encoder->id;
+    buffer[n++] = info.old_value;
+    buffer[n++] = info.new_value;
+
+    int bytes = usb_rawhid_send(buffer, 200);
+    if (bytes <= 0) {
+      animate_error(3);
+      return;
+    }
+  }
+
+  // TODO button msg, or move all button handling to single place.
+}
+
 void set_led_color_operator(toolset_t* toolset, void* pcolor) {
   unsigned char color = *(unsigned char*)pcolor;
   set_led_color(toolset, color);
@@ -66,6 +93,8 @@ int main(void) {
     }
 
     iterate_over_all_toolsets(transmit_clicks, NULL);
+
+    iterate_over_all_encoders(transmit_encoders, NULL);
     lights_render();
     delay(ITERATION_TIME_MS);
     _keepalive_timer += ITERATION_TIME_MS;
